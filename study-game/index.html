@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STM32 Lab Practical Study Game</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="setup-container" id="setup-container">
+        <h2>STM32 Lab Practical Prep</h2>
+        <p>Select topics to practice:</p>
+        <div id="topic-selection" class="topic-selection">
+            <!-- Topic checkboxes will be added here by JavaScript -->
+        </div>
+        <button id="start-selected-btn" class="btn">Start Quiz</button>
+        <p id="topic-error" style="color: red; display: none;">Please select at least one topic.</p>
+    </div>
+
+    <div class="container" id="main-container" style="display: none;">
+        <h1>STM32 Lab Practical Prep</h1>
+        <div class="score-board">
+            Score: <span id="score">0</span> / <span id="total-questions">0</span>
+        </div>
+
+        <div class="quiz-area">
+            <div id="question-container">
+                <h2 id="question-text">Loading question...</h2>
+            </div>
+
+            <div class="reference-material">
+                <h3>Simulated Reference Material</h3>
+                <div id="reference-content">
+                    <!-- Reference content will be added here by JavaScript -->
+                </div>
+            </div>
+
+            <div id="answer-options">
+                <!-- Answer options will be added here by JavaScript -->
+            </div>
+
+            <button id="submit-btn" class="btn">Submit Answer</button>
+            <button id="next-btn" class="btn" style="display: none;">Next Question</button>
+
+            <div id="feedback" class="feedback-hidden">
+                <!-- Feedback will be added here by JavaScript -->
+            </div>
+        </div>
+        
+        <div id="final-results" style="display: none;">
+            <h2>Game Over!</h2>
+            <p>Your final score is <span id="final-score">0</span> out of <span id="final-total">0</span>.</p>
+            <div id="topic-breakdown"></div>
+            <button id="restart-btn" class="btn">Restart Game</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
