@@ -1,0 +1,291 @@
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #f0f4f8; /* Light background */
+    color: #333;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.container, .setup-container {
+    background-color: #ffffff; /* White container */
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    width: 90%;
+    max-width: 800px;
+    text-align: center;
+}
+
+h1, h2 {
+    color: #2c3e50; /* Dark blue-grey heading */
+    margin-bottom: 15px;
+}
+
+.score-board {
+    font-size: 1.2em;
+    font-weight: 600;
+    color: #3498db; /* Blue score */
+    margin-bottom: 25px;
+}
+
+.quiz-area {
+    background-color: #ecf0f1; /* Very light grey for quiz section */
+    padding: 25px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    text-align: left; /* Align text left within quiz area */
+}
+
+#question-container h2 {
+    color: #2c3e50;
+    margin-bottom: 20px;
+    line-height: 1.4;
+}
+
+.reference-material {
+    background-color: #e8eef1; /* Slightly different background for reference */
+    border: 1px solid #bdc3c7; /* Light grey border */
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 20px;
+    font-size: 0.9em;
+}
+
+.reference-material h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    color: #7f8c8d; /* Grey heading for reference */
+    border-bottom: 1px solid #bdc3c7;
+    padding-bottom: 5px;
+}
+
+#reference-content p {
+    margin: 5px 0;
+    line-height: 1.5;
+}
+
+#reference-content code {
+    background-color: #dfe6e9;
+    padding: 2px 5px;
+    border-radius: 4px;
+    font-family: monospace;
+}
+
+.reference-material details {
+    border: 1px solid #bdc3c7;
+    border-radius: 4px;
+    margin-top: 10px;
+    background-color: #f8f9f9;
+}
+
+.reference-material summary {
+    padding: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    background-color: #dfe6e9;
+}
+
+.reference-material details p,
+.reference-material details table {
+    padding: 0 15px 10px 15px;
+    margin: 0;
+}
+
+#answer-options button {
+    display: block;
+    width: 100%;
+    background-color: #ffffff;
+    border: 2px solid #3498db; /* Blue border */
+    color: #3498db;
+    padding: 12px;
+    margin: 10px 0;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1em;
+    text-align: left;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+#answer-options button:hover:not(:disabled) {
+    background-color: #3498db; /* Blue background on hover */
+    color: #ffffff;
+}
+
+#answer-options button.selected {
+    background-color: #3498db;
+    color: #ffffff;
+    font-weight: 600;
+}
+
+#answer-options button:disabled {
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+#answer-options button.correct {
+    background-color: #2ecc71 !important; /* Green for correct */
+    color: #ffffff !important;
+    border-color: #2ecc71 !important;
+}
+
+#answer-options button.incorrect {
+    background-color: #e74c3c !important; /* Red for incorrect */
+    color: #ffffff !important;
+    border-color: #e74c3c !important;
+}
+
+#fill-blank-input {
+    display: block;
+    width: 95%; /* Adjust width as needed */
+    padding: 12px;
+    margin: 10px auto; /* Center it slightly */
+    border: 2px solid #bdc3c7;
+    border-radius: 8px;
+    font-size: 1em;
+    font-family: 'Poppins', sans-serif;
+}
+
+#fill-blank-input:focus {
+    border-color: #3498db;
+    outline: none;
+}
+
+.btn {
+    background-color: #3498db; /* Blue button */
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.1em;
+    margin-top: 15px;
+    transition: background-color 0.2s ease;
+    font-weight: 600;
+}
+
+.btn:hover {
+    background-color: #2980b9; /* Darker blue on hover */
+}
+
+#next-btn {
+    background-color: #2ecc71; /* Green next button */
+}
+
+#next-btn:hover {
+    background-color: #27ae60;
+}
+
+.feedback-hidden {
+    display: none;
+    margin-top: 20px;
+    padding: 15px;
+    border-radius: 8px;
+    font-weight: 600;
+    line-height: 1.5;
+}
+
+.feedback-correct {
+    display: block;
+    background-color: #eafaf1; /* Light green background */
+    color: #27ae60; /* Dark green text */
+    border: 1px solid #2ecc71;
+}
+
+.feedback-incorrect {
+    display: block;
+    background-color: #fdedec; /* Light red background */
+    color: #c0392b; /* Dark red text */
+    border: 1px solid #e74c3c;
+}
+
+.feedback-incorrect span { /* For explanation part */
+    display: block;
+    margin-top: 10px;
+    font-weight: normal;
+    color: #555;
+}
+
+.topic-selection {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin: 20px 0;
+}
+
+.topic-selection label {
+    display: inline-block;
+    background-color: #ecf0f1;
+    padding: 8px 15px;
+    border-radius: 20px;
+    cursor: pointer;
+    border: 1px solid #bdc3c7;
+    transition: background-color 0.2s;
+}
+
+.topic-selection input[type="checkbox"] {
+    display: none; /* Hide checkbox, style label */
+}
+
+.topic-selection input[type="checkbox"]:checked + label {
+    background-color: #3498db;
+    color: white;
+    border-color: #3498db;
+}
+
+.register-display {
+    font-family: monospace;
+    background-color: #f8f9fa;
+    border: 1px solid #ddd;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 4px;
+    overflow-x: auto;
+}
+
+.register-display pre {
+    margin: 0;
+    white-space: pre-wrap;
+}
+
+.bit-highlight {
+    background-color: #ffe082;
+    font-weight: bold;
+    padding: 0 2px;
+    border-radius: 2px;
+}
+
+#topic-breakdown ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 10px 0 20px 0;
+}
+
+#topic-breakdown li {
+    background-color: #f8f9fa;
+    padding: 8px 12px;
+    margin: 5px 0;
+    border-radius: 4px;
+    border-left: 4px solid #3498db;
+}
+
+/* Timer styles if implemented */
+.timer-container {
+    font-size: 1.1em;
+    margin-bottom: 15px;
+    color: #555;
+}
+
+.timer-warning {
+    color: #e67e22;
+}
+
+.timer-danger {
+    color: #e74c3c;
+    font-weight: bold;
+}
