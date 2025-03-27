@@ -205,10 +205,10 @@ function startGame(useFiltered = false) {
     // Reset state
     currentQuestionIndex = 0;
     score = 0;
-    finalResultsElement.style.display = 'none';
-    gameScreen.style.display = 'block';
-    topicSelectionScreen.style.display = 'none';
-    
+    finalResultsElement.classList.add('hidden');
+    gameScreen.classList.remove('hidden');
+    topicSelectionScreen.classList.add('hidden');
+
     // Use questionsToUse.length for total
     totalQuestionsElement.textContent = questionsToUse.length;
     scoreElement.textContent = score;
@@ -517,9 +517,9 @@ function handleNextQuestion() {
 
 // Show final results
 function showFinalResults(questionsToUse) {
-    gameScreen.style.display = 'none';
-    finalResultsElement.style.display = 'block';
-    
+    gameScreen.classList.add('hidden');
+    finalResultsElement.classList.remove('hidden');
+
     finalScoreElement.textContent = score;
     finalTotalElement.textContent = questionsToUse.length;
 
@@ -588,8 +588,14 @@ nextButton.addEventListener('click', handleNextQuestion);
 
 // Restart button click
 restartButton.addEventListener('click', () => {
-    gameScreen.style.display = 'none';
-    topicSelectionScreen.style.display = 'block';
+    finalResultsElement.classList.add('hidden'); // Hide results screen
+    topicSelectionScreen.classList.remove('hidden'); // Show topic selection
+});
+
+// New Topics button click (from results screen)
+document.getElementById('new-topics-btn').addEventListener('click', () => {
+    finalResultsElement.classList.add('hidden'); // Hide results screen
+    topicSelectionScreen.classList.remove('hidden'); // Show topic selection
 });
 
 // End button click
