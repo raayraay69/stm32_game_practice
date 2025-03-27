@@ -3,64 +3,105 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>STM32 Lab Practical Study Game</title>
+    <title>STM32 Lab Practical Simulator</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="setup-container" id="setup-container">
-        <h2>STM32 Lab Practical Prep</h2>
+    <!-- Topic Selection Screen -->
+    <div id="topic-selection-screen">
+        <h1>STM32 Lab Practical Study Game</h1>
         <p>Select topics to practice:</p>
-        <div id="topic-selection" class="topic-selection">
-            <!-- Topic checkboxes will be added here by JavaScript -->
+        <div class="topic-buttons">
+            <button class="topic-btn selected" data-topic="all">All Topics</button>
+            <button class="topic-btn" data-topic="gpio">GPIO</button>
+            <button class="topic-btn" data-topic="timers">Timers/PWM</button>
+            <button class="topic-btn" data-topic="dma">DMA</button>
+            <button class="topic-btn" data-topic="adc">ADC</button>
+            <button class="topic-btn" data-topic="dac">DAC</button>
+            <button class="topic-btn" data-topic="spi">SPI</button>
+            <button class="topic-btn" data-topic="interrupts">Interrupts</button>
+            <button class="topic-btn" data-topic="rcc">RCC</button>
         </div>
-        <button id="start-selected-btn" class="btn">Start Quiz</button>
-        <p id="topic-error" style="color: red; display: none;">Please select at least one topic.</p>
+        <button id="start-btn" class="primary-btn">Start Practice</button>
     </div>
 
-    <div class="container" id="main-container" style="display: none;">
-        <h1>STM32 Lab Practical Prep</h1>
-        <div class="score-board">
-            Score: <span id="score">0</span> / <span id="total-questions">0</span>
-        </div>
-
-        <div class="progress-container">
-            <div id="progress-bar"></div>
-            <span id="progress-text">Question 0 / 0</span>
-        </div>
-
-        <div class="quiz-area">
-            <div id="question-container">
-                <h2 id="question-text">Loading question...</h2>
+    <!-- Main Game Screen -->
+    <div id="game-screen" class="hidden">
+        <div class="header">
+            <div class="score-container">
+                <span>Score: <span id="score">0</span>/<span id="total-questions">0</span></span>
             </div>
+            <div class="timer-container">
+                <span id="timer">00:00</span>
+            </div>
+            <button id="end-btn" class="secondary-btn">End Practice</button>
+        </div>
 
-            <details class="reference-material">
-                <summary>Show/Hide Reference Material</summary>
-                <div id="reference-content">
-                    <!-- Reference content will be added here by JavaScript -->
+        <div class="content-area">
+            <div class="left-panel">
+                <div class="question-container">
+                    <h2 id="question-text">Question goes here</h2>
+                    <div id="question-details"></div>
                 </div>
-            </details>
-
-            <div id="answer-options">
-                <!-- Answer options will be added here by JavaScript -->
-            </div>
-
-            <button id="submit-btn" class="btn">Submit Answer</button>
-            <button id="next-btn" class="btn" style="display: none;">Next Question</button>
-
-            <div id="feedback" class="feedback-hidden">
-                <!-- Feedback will be added here by JavaScript -->
-                <div id="simulation-feedback" style="display: none; margin-top: 15px;">
-                    <!-- Simulation content will be added here -->
+                <div id="input-area">
+                    <!-- Dynamic content: multiple choice, code input, etc. -->
+                </div>
+                <div class="buttons-container">
+                    <button id="submit-btn" class="primary-btn">Submit Answer</button>
+                    <button id="next-btn" class="primary-btn hidden">Next Question</button>
+                </div>
+                <div id="feedback-area" class="hidden">
+                    <!-- Feedback on answer correctness -->
                 </div>
             </div>
+
+            <div class="right-panel">
+                <div class="reference-container">
+                    <h3>Reference Material</h3>
+                    <div id="reference-content">
+                        <!-- Dynamic reference content -->
+                    </div>
+                </div>
+                <div class="simulation-container">
+                    <h3>Hardware Simulation</h3>
+                    <div id="simulation">
+                        <!-- Visual simulation of hardware -->
+                        <div id="led-panel">
+                            <div class="led" id="led-1" data-pin="PA5"></div>
+                            <div class="led" id="led-2" data-pin="PA6"></div>
+                            <div class="led" id="led-3" data-pin="PA7"></div>
+                            <div class="led" id="led-4" data-pin="PA8"></div>
+                        </div>
+                        <div id="seven-segment">
+                            <div class="segment" id="segment-a"></div>
+                            <div class="segment" id="segment-b"></div>
+                            <div class="segment" id="segment-c"></div>
+                            <div class="segment" id="segment-d"></div>
+                            <div class="segment" id="segment-e"></div>
+                            <div class="segment" id="segment-f"></div>
+                            <div class="segment" id="segment-g"></div>
+                            <div class="segment" id="segment-dp"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-        
-        <div id="final-results" style="display: none;">
-            <h2>Game Over!</h2>
-            <p>Your final score is <span id="final-score">0</span> out of <span id="final-total">0</span>.</p>
-            <div id="topic-breakdown"></div>
-            <button id="restart-btn" class="btn">Restart Game</button>
+    </div>
+
+    <!-- Results Screen -->
+    <div id="results-screen" class="hidden">
+        <h1>Practice Results</h1>
+        <div class="results-summary">
+            <p>Final Score: <span id="final-score">0</span>/<span id="final-total">0</span></p>
+            <p>Time Taken: <span id="time-taken">00:00</span></p>
+        </div>
+        <div id="topic-breakdown">
+            <!-- Topic-by-topic score breakdown -->
+        </div>
+        <div class="buttons-container">
+            <button id="restart-btn" class="primary-btn">Practice Again</button>
+            <button id="new-topics-btn" class="secondary-btn">Select New Topics</button>
         </div>
     </div>
 
