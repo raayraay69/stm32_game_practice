@@ -72,6 +72,7 @@ button {
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     max-width: 800px;
     margin: 20px auto;
+    animation: fadeIn 0.5s ease-in-out;
 }
 
 .topic-buttons {
@@ -87,17 +88,35 @@ button {
     border: 2px solid transparent;
     border-radius: 20px;
     padding: 8px 16px;
+    transition: all 0.3s ease;
+}
+
+.topic-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .topic-btn.selected {
     background-color: var(--secondary-color);
     color: var(--light-text);
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
 }
 
 #start-btn {
     margin-top: 20px;
     padding: 10px 25px;
     font-size: 1.1rem;
+    transition: all 0.3s ease;
+}
+
+#start-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 15px rgba(52, 152, 219, 0.4);
+}
+
+#start-btn:active {
+    transform: translateY(1px);
 }
 
 /* Game Screen */
@@ -106,6 +125,7 @@ button {
     border-radius: 8px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     overflow: hidden;
+    animation: slideInFromRight 0.5s ease-in-out;
 }
 
 .header {
@@ -115,6 +135,11 @@ button {
     padding: 1rem 2rem;
     background-color: var(--primary-color);
     color: var(--light-text);
+}
+
+.score-container, .timer-container {
+    font-size: 1.1rem;
+    font-weight: 500;
 }
 
 .content-area {
@@ -136,15 +161,34 @@ button {
 
 .question-container {
     margin-bottom: 1.5rem;
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+#question-text {
+    font-size: 1.4rem;
+    line-height: 1.4;
+    color: var(--primary-color);
+}
+
+.topic-tag {
+    display: inline-block;
+    background-color: var(--primary-color);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    margin-right: 8px;
 }
 
 #question-details {
     font-size: 0.95rem;
     color: #555;
+    margin-top: 8px;
 }
 
 #input-area {
     margin-bottom: 1.5rem;
+    animation: fadeIn 0.5s ease-in-out;
 }
 
 /* Multiple Choice Options */
@@ -162,21 +206,27 @@ button {
 
 .option-btn:hover {
     border-color: var(--secondary-color);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .option-btn.selected {
     border-color: var(--secondary-color);
     background-color: rgba(52, 152, 219, 0.1);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 10px rgba(52, 152, 219, 0.2);
 }
 
 .option-btn.correct {
     border-color: var(--correct-color);
     background-color: rgba(46, 204, 113, 0.1);
+    animation: pulse 1s ease-in-out;
 }
 
 .option-btn.incorrect {
     border-color: var(--incorrect-color);
     background-color: rgba(231, 76, 60, 0.1);
+    animation: shake 0.5s ease-in-out;
 }
 
 /* Code Input */
@@ -188,11 +238,13 @@ button {
     border-radius: 4px;
     font-size: 0.9rem;
     min-height: 100px;
+    transition: all 0.3s ease;
 }
 
 .code-input:focus {
     border-color: var(--secondary-color);
     outline: none;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.25);
 }
 
 /* Fill in the blank input */
@@ -205,11 +257,13 @@ button {
     border-radius: 4px;
     font-size: 1rem;
     margin-bottom: 15px;
+    transition: all 0.3s ease;
 }
 
 #fill-blank-input:focus {
     border-color: var(--secondary-color);
     outline: none;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.25);
 }
 
 /* Feedback Area */
@@ -217,6 +271,7 @@ button {
     padding: 15px;
     border-radius: 4px;
     margin-top: 15px;
+    animation: fadeIn 0.4s ease-in-out;
 }
 
 .feedback-correct {
@@ -246,6 +301,11 @@ button {
     margin-bottom: 1.5rem;
     max-height: 300px;
     overflow-y: auto;
+    transition: all 0.3s ease;
+}
+
+.reference-container:hover {
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
 }
 
 .reference-container pre {
@@ -272,6 +332,12 @@ button {
     padding: 1rem;
     overflow-y: auto;
     max-height: 400px;
+    animation: fadeIn 0.5s ease-in-out;
+    transition: all 0.3s ease;
+}
+
+.simulation-container:hover {
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
 }
 
 /* LED Simulation */
@@ -288,11 +354,13 @@ button {
     background-color: #ddd;
     border: 2px solid #aaa;
     position: relative;
+    transition: all 0.4s ease;
 }
 
 .led.on {
     background-color: #ff5252;
     box-shadow: 0 0 10px #ff5252;
+    animation: glow 1.5s infinite alternate;
 }
 
 .led::after {
@@ -316,6 +384,7 @@ button {
 .segment {
     position: absolute;
     background-color: #ddd;
+    transition: all 0.3s ease;
 }
 
 /* Horizontal segments */
@@ -380,6 +449,7 @@ button {
 .segment.on {
     background-color: #ff5252;
     box-shadow: 0 0 5px #ff5252;
+    animation: glow 1.5s infinite alternate;
 }
 
 /* Results Screen */
@@ -391,6 +461,7 @@ button {
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     max-width: 800px;
     margin: 20px auto;
+    animation: fadeIn 0.6s ease-in-out;
 }
 
 .results-summary {
@@ -417,7 +488,16 @@ button {
     border-bottom: 1px solid var(--neutral-color);
     display: flex;
     justify-content: space-between;
+    animation: slideInFromLeft 0.5s ease-in-out;
+    animation-fill-mode: both;
 }
+
+#topic-breakdown li:nth-child(1) { animation-delay: 0.1s; }
+#topic-breakdown li:nth-child(2) { animation-delay: 0.2s; }
+#topic-breakdown li:nth-child(3) { animation-delay: 0.3s; }
+#topic-breakdown li:nth-child(4) { animation-delay: 0.4s; }
+#topic-breakdown li:nth-child(5) { animation-delay: 0.5s; }
+#topic-breakdown li:nth-child(6) { animation-delay: 0.6s; }
 
 .buttons-container {
     margin-top: 1.5rem;
@@ -435,6 +515,7 @@ button {
     line-height: 1.5;
     overflow-x: auto;
     white-space: nowrap;
+    animation: fadeIn 0.5s ease-in-out;
 }
 
 .moder-bit {
@@ -443,23 +524,71 @@ button {
     margin: 0 2px;
     border-radius: 3px;
     background-color: #34495e;
+    transition: all 0.3s ease;
+}
+
+.moder-bit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
 .highlight-bit {
     background-color: #e74c3c;
     color: white;
     font-weight: bold;
+    animation: pulse 2s infinite;
 }
 
-/* Responsive Design */
-@media (max-width: 900px) {
-    .content-area {
-        flex-direction: column;
-    }
-    
-    .left-panel, .right-panel {
-        flex: 1;
-        border-right: none;
-        border-bottom: 1px solid var(--neutral-color);
-    }
+/* Advanced Simulation Components */
+.register-sim {
+    background-color: #f8f9fa;
+    border-radius: 6px;
+    padding: 15px;
+    margin: 15px 0;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    animation: fadeIn 0.5s ease-in-out;
 }
+
+.register-sim h4 {
+    margin-bottom: 10px;
+    color: var(--primary-color);
+    border-bottom: 1px solid var(--dark-neutral);
+    padding-bottom: 5px;
+}
+
+.register-bits {
+    display: flex;
+    justify-content: center;
+    margin: 15px 0;
+    flex-wrap: wrap;
+}
+
+.register-bit {
+    width: 30px;
+    height: 30px;
+    margin: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #ccc;
+    background-color: #f8f9fa;
+    font-family: monospace;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.register-bit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.register-bit.active {
+    background-color: #3498db;
+    color: white;
+    border-color: #2980b9;
+}
+
+.register-bit.highlight {
+    background-color: #e74c3c;
+    color: white;
+    border-color
