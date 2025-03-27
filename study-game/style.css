@@ -289,3 +289,48 @@ h1, h2 {
     color: #e74c3c;
     font-weight: bold;
 }
+
+#simulation-feedback {
+    border: 1px dashed #bdc3c7; /* Light grey dashed border */
+    padding: 15px;
+    background-color: #f8f9fa; /* Very light background */
+    border-radius: 5px;
+    font-size: 0.9em;
+    text-align: left;
+}
+
+#simulation-feedback h4 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    color: #7f8c8d; /* Grey heading */
+    border-bottom: 1px solid #bdc3c7;
+    padding-bottom: 5px;
+}
+
+#simulation-feedback code {
+    background-color: #dfe6e9;
+    padding: 2px 5px;
+    border-radius: 4px;
+    font-family: monospace;
+}
+
+#simulation-feedback .moder-vis {
+    font-family: monospace;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    padding: 5px;
+    margin-top: 5px;
+    display: inline-block; /* Keep it tight */
+}
+
+#simulation-feedback .moder-bit {
+    display: inline-block;
+    padding: 2px 4px;
+    border: 1px solid #eee;
+    margin: 0 1px;
+}
+
+#simulation-feedback .highlight-bit {
+    background-color: #ffe082; /* Yellow highlight */
+    font-weight: bold;
+}

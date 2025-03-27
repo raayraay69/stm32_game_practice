@@ -17,6 +17,7 @@ const mainContainer = document.getElementById('main-container');
 const startSelectedButton = document.getElementById('start-selected-btn');
 const topicErrorElement = document.getElementById('topic-error');
 const topicBreakdownElement = document.getElementById('topic-breakdown');
+const simulationFeedbackElement = document.getElementById('simulation-feedback'); // Added reference
 
 // Global variables
 let currentQuestionIndex = 0;
@@ -217,7 +218,8 @@ function populateTopicSelection() {
 
 // Start the quiz game
 function startGame(useFiltered = false) {
-    const questionsToUse = useFiltered ? filteredQuestions : questions;
+    // Assign to the global variable
+    questionsToUse = useFiltered ? filteredQuestions : questions; 
     if (questionsToUse.length === 0) {
         alert("No questions available for the selected topics!"); // Handle edge case
         // Optionally, show setup again
@@ -235,13 +237,13 @@ function startGame(useFiltered = false) {
     totalQuestionsElement.textContent = questionsToUse.length;
     scoreElement.textContent = score;
     
-    // Initialize topic scores
+    // Initialize topic scores - MODIFIED SECTION
     topicScores = {};
-    questionsToUse.forEach(q => {
-        if (!topicScores[q.topic]) {
-            topicScores[q.topic] = { correct: 0, total: 0, pointsCorrect: 0, pointsTotal: 0 };
-        }
-        // Initialize points if not present, default to 1
+    const allTopics = [...new Set(questions.map(q => q.topic))]; // Get all unique topics
+    allTopics.forEach(topic => {
+        topicScores[topic] = { correct: 0, total: 0, pointsCorrect: 0, pointsTotal: 0 };
+    });
+    questionsToUse.forEach(q => { // THEN update counts based on selected questions
         q.points = q.points || 1;
         topicScores[q.topic].total++;
         topicScores[q.topic].pointsTotal += q.points;
@@ -251,11 +253,135 @@ function startGame(useFiltered = false) {
     loadQuestion(questionsToUse); // Pass the array to loadQuestion
 }
 
+// --- Simulation Functions ---
+
+// Shows a visualization for setting Alternate Function mode in MODER
+function showAlternateFunctionSimulation(pinNumber) {
+    const bitPosition = pinNumber * 2;
+    const bitPositionHigh = bitPosition + 1;
+
+    let simulationHTML = `
+        <h4>GPIO Port Mode Register (MODER) - Pin ${pinNumber}</h4>
+        <p>To set Pin ${pinNumber} to Alternate Function mode, you need to write '10' to the corresponding bits in the MODER register.</p>
+        <p>The bits for Pin ${pinNumber} are bits ${bitPositionHigh} and ${bitPosition}.</p>
+        <div>MODER Register (showing relevant bits):</div>
+        <div class="moder-vis">
+            ...
+            <span class="moder-bit ${bitPositionHigh === pinNumber * 2 + 1 ? 'highlight-bit' : ''}">Bit ${bitPositionHigh}</span>
+            <span class="moder-bit ${bitPosition === pinNumber * 2 ? 'highlight-bit' : ''}">Bit ${bitPosition}</span>
+            ...
+        </div>
+        <p>Set Bit ${bitPositionHigh} = <code>1</code>, Set Bit ${bitPosition} = <code>0</code></p>
+        <p>Example Code (for PC${pinNumber}):</p>
+        <code>
+        // Clear bits first<br>
+        GPIOC->MODER &= ~(0x3 << (${pinNumber} * 2)); <br>
+        // Set bits to '10' (Alternate Function)<br>
+        GPIOC->MODER |= (0x2 << (${pinNumber} * 2));
+        </code>
+    `;
+
+    simulationFeedbackElement.innerHTML = simulationHTML;
+    simulationFeedbackElement.innerHTML = simulationHTML;
+    simulationFeedbackElement.style.display = 'block';
+}
+
+// Shows a visualization for enabling a GPIO clock in RCC_AHBENR
+function showRccAhbenrSimulation(portLetter) {
+    const portMap = { 'A': 17, 'B': 18, 'C': 19, 'D': 20, 'F': 22 }; // Bit positions for common ports
+    const bitPosition = portMap[portLetter];
+    if (bitPosition === undefined) return; // Only handle known ports
+
+    let simulationHTML = `
+        <h4>RCC AHB Enable Register (AHBENR) - GPIO${portLetter} Clock</h4>
+        <p>To use GPIO Port ${portLetter}, its clock must first be enabled in the <code>RCC->AHBENR</code> register.</p>
+        <p>The bit for GPIO Port ${portLetter} is Bit ${bitPosition} (<code>IOP${portLetter}EN</code>).</p>
+        <div>AHBENR Register (simplified view):</div>
+        <div class="moder-vis">
+            ... | Bit ${bitPosition + 1} | <span class="moder-bit highlight-bit">Bit ${bitPosition} (IOP${portLetter}EN)</span> | Bit ${bitPosition - 1} | ...
+        </div>
+        <p>To enable the clock, set Bit ${bitPosition} to <code>1</code>.</p>
+        <p>Example Code (for GPIO${portLetter}):</p>
+        <code>
+        // Enable clock for GPIO Port ${portLetter}<br>
+        RCC->AHBENR |= (1 << ${bitPosition}); <br>
+        // Or using the defined macro:<br>
+        RCC->AHBENR |= RCC_AHBENR_GPIO${portLetter}EN;
+        </code>
+    `;
+
+    simulationFeedbackElement.innerHTML = simulationHTML;
+    simulationFeedbackElement.innerHTML = simulationHTML;
+    simulationFeedbackElement.style.display = 'block';
+}
+
+// Shows a visualization for setting General Purpose Output mode in MODER
+function showGpioOutputSimulation(pins) {
+    let simulationHTML = `<h4>GPIO Port Mode Register (MODER) - Output Mode</h4>`;
+    pins.forEach(pinNumber => {
+        const bitPosition = pinNumber * 2;
+        const bitPositionHigh = bitPosition + 1;
+        simulationHTML += `
+            <p style="margin-top:10px;">To set Pin ${pinNumber} to Output mode, write '01' to bits ${bitPositionHigh} and ${bitPosition}.</p>
+            <div class="moder-vis">
+                ...
+                <span class="moder-bit ${bitPositionHigh === pinNumber * 2 + 1 ? 'highlight-bit' : ''}">Bit ${bitPositionHigh}</span>
+                <span class="moder-bit ${bitPosition === pinNumber * 2 ? 'highlight-bit' : ''}">Bit ${bitPosition}</span>
+                ...
+            </div>
+            <p>Set Bit ${bitPositionHigh} = <code>0</code>, Set Bit ${bitPosition} = <code>1</code></p>
+        `;
+    });
+     simulationHTML += `
+        <p style="margin-top:15px;">Example Code (for PC${pins.join(' & PC')}):</p>
+        <code>
+        // Clear bits first (using a mask for all relevant pins)<br>
+        // e.g., for PC4 & PC5, mask is 0xf << (4*2) = 0xf00<br>
+        GPIOC->MODER &= ~(/* mask */); <br>
+        // Set bits to '01' (Output) for each pin<br>
+        // e.g., for PC4 & PC5, value is (0x1 << (4*2)) | (0x1 << (5*2)) = 0x500<br>
+        GPIOC->MODER |= (/* value */);
+        </code>
+    `;
+    simulationFeedbackElement.innerHTML = simulationHTML;
+    simulationFeedbackElement.innerHTML = simulationHTML;
+    simulationFeedbackElement.style.display = 'block';
+}
+
+// Shows a visualization for clearing the Timer Update Interrupt Flag (UIF)
+function showTimerFlagClearSimulation(timerNum) {
+    let simulationHTML = `
+        <h4>Timer ${timerNum} Status Register (SR) - Update Interrupt Flag (UIF)</h4>
+        <p>When a timer update event occurs (like counter overflow), the hardware sets the <code>UIF</code> bit (Bit 0) in the <code>TIM${timerNum}->SR</code> register.</p>
+        <p>If the update interrupt is enabled (in DIER and NVIC), this triggers the ISR.</p>
+        <div>TIM${timerNum}->SR Register (simplified view):</div>
+        <div class="moder-vis">
+           ... | Bit 1 | <span class="moder-bit highlight-bit">Bit 0 (UIF)</span>
+        </div>
+        <p><b>Crucially:</b> You MUST clear this flag in your ISR by writing 0 to it. Otherwise, the ISR will keep triggering immediately after exiting.</p>
+        <p>Example Code (inside TIM${timerNum}_IRQHandler):</p>
+        <code>
+        // Clear the Update Interrupt Flag<br>
+        TIM${timerNum}->SR &= ~TIM_SR_UIF; <br>
+        // Or TIM${timerNum}->SR = 0; (if no other flags need preserving)
+        </code>
+        <p>This tells the hardware the interrupt has been handled.</p>
+    `;
+    simulationFeedbackElement.innerHTML = simulationHTML;
+    simulationFeedbackElement.style.display = 'block';
+}
+
+
+// --- Core Quiz Functions ---
+
 // Load a question
 function loadQuestion(questionsToUse) {
     // Reset state from previous question
     feedbackElement.className = 'feedback-hidden'; // Hide feedback
+    feedbackElement.className = 'feedback-hidden'; // Hide feedback
     feedbackElement.innerHTML = '';
+    simulationFeedbackElement.style.display = 'none'; // Hide simulation area
+    simulationFeedbackElement.innerHTML = ''; // Clear simulation content
     submitButton.style.display = 'block';
     nextButton.style.display = 'none';
     submitButton.disabled = true; // Disable until an answer is selected
@@ -318,8 +444,8 @@ function handleOptionSelect(selectedButton, index) {
 }
 
 // Handle submit button click
-function handleSubmit(questionsToUse) {
-    const currentQuestion = questionsToUse[currentQuestionIndex];
+function handleSubmit() { // Removed questionsToUse parameter
+    const currentQuestion = questionsToUse[currentQuestionIndex]; // Uses global questionsToUse
     let correct = false;
     
     if (currentQuestion.type === 'fill-blank') {
@@ -380,6 +506,25 @@ function handleSubmit(questionsToUse) {
         }
         feedbackElement.innerHTML = explanationText;
         feedbackElement.className = 'feedback-incorrect';
+
+        // --- Trigger Simulation for specific question ---
+        // Check if this is the specific Alternate Function question for PC6
+        if (currentQuestion.topic === "GPIO" && currentQuestion.question.includes("GPIOC->MODER register to configure pin PC6")) {
+            showAlternateFunctionSimulation(6); // Call simulation for Pin 6
+        }
+        // Check if this is the RCC AHBENR question for GPIOB
+        else if (currentQuestion.topic === "RCC" && currentQuestion.question.includes("enable the clock for the GPIOB peripheral")) {
+             showRccAhbenrSimulation('B'); // Call simulation for Port B
+        }
+        // Check if this is the GPIO Output mode question for PC4/PC5
+        else if (currentQuestion.topic === "GPIO" && currentQuestion.question.includes("sets PC4 and PC5 to general purpose output mode")) {
+             showGpioOutputSimulation([4, 5]); // Call simulation for Pins 4 and 5
+        }
+        // Check if this is the Timer ISR flag clearing question (assuming TIM7 from example)
+        else if (currentQuestion.topic === "Interrupts" && currentQuestion.question.includes("beginning of a Timer interrupt handler")) {
+             showTimerFlagClearSimulation(7); // Call simulation for Timer 7
+        }
+        // --- End Simulation Trigger ---
     }
 
     // Show Next button, hide Submit button
@@ -393,9 +538,9 @@ function handleSubmit(questionsToUse) {
 }
 
 // Handle next question button click
-function handleNextQuestion(questionsToUse) {
+function handleNextQuestion() { // Removed questionsToUse parameter
     currentQuestionIndex++;
-    loadQuestion(questionsToUse);
+    loadQuestion(questionsToUse); // loadQuestion still needs it to know which question to load
 }
 
 // Show final results
@@ -447,10 +592,10 @@ startSelectedButton.addEventListener('click', () => {
 });
 
 // Submit button click
-submitButton.addEventListener('click', () => handleSubmit(questionsToUse));
+submitButton.addEventListener('click', handleSubmit); // Call without argument
 
 // Next button click
-nextButton.addEventListener('click', () => handleNextQuestion(questionsToUse));
+nextButton.addEventListener('click', handleNextQuestion); // Call without argument
 
 // Restart button click
 restartButton.addEventListener('click', () => {
