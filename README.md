@@ -1,8 +1,11 @@
 # STM32 Game Practice
 
-A simple obstacle-dodging game for STM32F0 microcontrollers. This project demonstrates the basic features of STM32 microcontrollers, including GPIO, timers, interrupts, and DMA.
+A repository containing two key components:
 
-## Overview
+1. **Obstacle-Dodging Game**: A simple game for STM32F0 microcontrollers demonstrating GPIO, timers, interrupts, and DMA.
+2. **Lab Practical Study Game**: An interactive web-based quiz to help prepare for STM32 microcontroller lab practicals.
+
+## Obstacle-Dodging Game Overview
 
 This game uses a 7-segment display to show a simple side-scrolling game where the player must dodge obstacles. The player is represented by the letter 'P' and obstacles are represented by the letter 'O'.
 
@@ -54,15 +57,44 @@ This game uses a 7-segment display to show a simple side-scrolling game where th
 2. Build the project using the IDE's build tools
 3. Flash the compiled binary to your STM32 device
 
-## Code Structure
+## Lab Practical Study Game
 
-- `game.c`: Main game logic and implementation
-- `game.h`: Header file with type definitions and function prototypes
-- Supporting files from the STM32 standard peripheral library
+Located in the `study-game` directory, this interactive web-based quiz helps you prepare for STM32 lab practicals by testing your knowledge of microcontroller peripherals and configurations.
+
+### Features
+
+- Multiple-choice and fill-in-the-blank questions
+- Topic selection to focus on specific areas (GPIO, timers, DMA, etc.)
+- Detailed reference materials similar to what you'd have in the practical
+- Instant feedback with explanations
+- Score tracking by topic
+- Responsive design
+
+### How to Use
+
+1. Open the `study-game/index.html` file in a web browser
+2. Select the topics you want to practice
+3. Answer the questions
+4. Get instant feedback and explanations
+5. Review your score breakdown by topic
+6. Restart to practice more with randomized questions
+
+### Topics Covered
+
+- RCC (Reset and Clock Control)
+- GPIO (General Purpose Input/Output)
+- Timers and PWM
+- ADC (Analog-to-Digital Converter)
+- DAC (Digital-to-Analog Converter)
+- DMA (Direct Memory Access)
+- SPI (Serial Peripheral Interface)
+- Interrupts
 
 ## Future Improvements
 
-- Add sound effects
+- Add more questions to the study game
+- Implement timer/countdown feature for practical-like conditions
+- Add sound effects to the obstacle game
 - Implement more complex obstacles
 - Add power-ups and special abilities
 - Save high scores
