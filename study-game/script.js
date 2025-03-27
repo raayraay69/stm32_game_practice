@@ -1,23 +1,22 @@
 // DOM Element References
 const questionTextElement = document.getElementById('question-text');
 const referenceContentElement = document.getElementById('reference-content');
-const answerOptionsElement = document.getElementById('answer-options');
+const answerOptionsElement = document.getElementById('input-area');
 const submitButton = document.getElementById('submit-btn');
 const nextButton = document.getElementById('next-btn');
-const feedbackElement = document.getElementById('feedback');
+const feedbackElement = document.getElementById('feedback-area');
 const scoreElement = document.getElementById('score');
 const totalQuestionsElement = document.getElementById('total-questions');
-const quizAreaElement = document.querySelector('.quiz-area');
-const finalResultsElement = document.getElementById('final-results');
+const quizAreaElement = document.querySelector('.content-area');
+const finalResultsElement = document.getElementById('results-screen');
 const finalScoreElement = document.getElementById('final-score');
 const finalTotalElement = document.getElementById('final-total');
 const restartButton = document.getElementById('restart-btn');
-const setupContainer = document.getElementById('setup-container');
-const mainContainer = document.getElementById('main-container');
-const startSelectedButton = document.getElementById('start-selected-btn');
-const topicErrorElement = document.getElementById('topic-error');
+const topicSelectionScreen = document.getElementById('topic-selection-screen');
+const gameScreen = document.getElementById('game-screen');
+const startButton = document.getElementById('start-btn'); // Fix: using start-btn instead of start-selected-btn
 const topicBreakdownElement = document.getElementById('topic-breakdown');
-const simulationFeedbackElement = document.getElementById('simulation-feedback'); // Added reference
+const simulationElement = document.getElementById('simulation'); // Added reference
 
 // Global variables
 let currentQuestionIndex = 0;
@@ -194,37 +193,12 @@ function shuffleArray(array) {
     }
 }
 
-// Populates the topic selection checkboxes
-function populateTopicSelection() {
-    const topics = [...new Set(questions.map(q => q.topic))]; // Get unique topics
-    const topicSelectionDiv = document.getElementById('topic-selection');
-    topicSelectionDiv.innerHTML = ''; // Clear previous
-    topics.sort().forEach(topic => {
-        const id = `topic-${topic.replace(/\s+/g, '-')}`; // Create valid ID
-        const checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
-        checkbox.id = id;
-        checkbox.value = topic;
-        checkbox.name = 'topics';
-
-        const label = document.createElement('label');
-        label.htmlFor = id;
-        label.textContent = topic;
-
-        topicSelectionDiv.appendChild(checkbox);
-        topicSelectionDiv.appendChild(label);
-    });
-}
-
 // Start the quiz game
 function startGame(useFiltered = false) {
     // Assign to the global variable
     questionsToUse = useFiltered ? filteredQuestions : questions; 
     if (questionsToUse.length === 0) {
         alert("No questions available for the selected topics!"); // Handle edge case
-        // Optionally, show setup again
-        document.getElementById('setup-container').style.display = 'block';
-        document.getElementById('main-container').style.display = 'none';
         return;
     }
     
@@ -232,18 +206,20 @@ function startGame(useFiltered = false) {
     currentQuestionIndex = 0;
     score = 0;
     finalResultsElement.style.display = 'none';
-    quizAreaElement.style.display = 'block';
+    gameScreen.style.display = 'block';
+    topicSelectionScreen.style.display = 'none';
+    
     // Use questionsToUse.length for total
     totalQuestionsElement.textContent = questionsToUse.length;
     scoreElement.textContent = score;
     
-    // Initialize topic scores - MODIFIED SECTION
+    // Initialize topic scores
     topicScores = {};
     const allTopics = [...new Set(questions.map(q => q.topic))]; // Get all unique topics
     allTopics.forEach(topic => {
         topicScores[topic] = { correct: 0, total: 0, pointsCorrect: 0, pointsTotal: 0 };
     });
-    questionsToUse.forEach(q => { // THEN update counts based on selected questions
+    questionsToUse.forEach(q => {
         q.points = q.points || 1;
         topicScores[q.topic].total++;
         topicScores[q.topic].pointsTotal += q.points;
@@ -281,9 +257,8 @@ function showAlternateFunctionSimulation(pinNumber) {
         </code>
     `;
 
-    simulationFeedbackElement.innerHTML = simulationHTML;
-    simulationFeedbackElement.innerHTML = simulationHTML;
-    simulationFeedbackElement.style.display = 'block';
+    simulationElement.innerHTML = simulationHTML;
+    simulationElement.style.display = 'block';
 }
 
 // Shows a visualization for enabling a GPIO clock in RCC_AHBENR
@@ -310,9 +285,8 @@ function showRccAhbenrSimulation(portLetter) {
         </code>
     `;
 
-    simulationFeedbackElement.innerHTML = simulationHTML;
-    simulationFeedbackElement.innerHTML = simulationHTML;
-    simulationFeedbackElement.style.display = 'block';
+    simulationElement.innerHTML = simulationHTML;
+    simulationElement.style.display = 'block';
 }
 
 // Shows a visualization for setting General Purpose Output mode in MODER
@@ -340,12 +314,10 @@ function showGpioOutputSimulation(pins) {
         GPIOC->MODER &= ~(/* mask */); <br>
         // Set bits to '01' (Output) for each pin<br>
         // e.g., for PC4 & PC5, value is (0x1 << (4*2)) | (0x1 << (5*2)) = 0x500<br>
-        GPIOC->MODER |= (/* value */);
-        </code>
+        GPIOC->MODER |= (/* value */);</code>
     `;
-    simulationFeedbackElement.innerHTML = simulationHTML;
-    simulationFeedbackElement.innerHTML = simulationHTML;
-    simulationFeedbackElement.style.display = 'block';
+    simulationElement.innerHTML = simulationHTML;
+    simulationElement.style.display = 'block';
 }
 
 // Shows a visualization for clearing the Timer Update Interrupt Flag (UIF)
@@ -367,21 +339,19 @@ function showTimerFlagClearSimulation(timerNum) {
         </code>
         <p>This tells the hardware the interrupt has been handled.</p>
     `;
-    simulationFeedbackElement.innerHTML = simulationHTML;
-    simulationFeedbackElement.style.display = 'block';
+    simulationElement.innerHTML = simulationHTML;
+    simulationElement.style.display = 'block';
 }
-
 
 // --- Core Quiz Functions ---
 
 // Load a question
 function loadQuestion(questionsToUse) {
     // Reset state from previous question
-    feedbackElement.className = 'feedback-hidden'; // Hide feedback
-    feedbackElement.className = 'feedback-hidden'; // Hide feedback
+    feedbackElement.className = 'hidden'; // Hide feedback
     feedbackElement.innerHTML = '';
-    simulationFeedbackElement.style.display = 'none'; // Hide simulation area
-    simulationFeedbackElement.innerHTML = ''; // Clear simulation content
+    simulationElement.style.display = 'block'; // Show simulation area
+    simulationElement.innerHTML = ''; // Clear simulation content
     submitButton.style.display = 'block';
     nextButton.style.display = 'none';
     submitButton.disabled = true; // Disable until an answer is selected
@@ -415,12 +385,13 @@ function loadQuestion(questionsToUse) {
         // Allow submitting with Enter key
         inputField.addEventListener('keyup', (event) => {
             if (event.key === 'Enter' && !submitButton.disabled) {
-                handleSubmit(questionsToUse);
+                handleSubmit();
             }
         });
     } else { // Default is multiple-choice
         currentQuestion.options.forEach((option, index) => {
             const button = document.createElement('button');
+            button.className = 'option-btn';
             button.innerHTML = option; // Use innerHTML for code formatting
             button.dataset.index = index; // Store the index
             button.addEventListener('click', () => handleOptionSelect(button, index));
@@ -444,8 +415,8 @@ function handleOptionSelect(selectedButton, index) {
 }
 
 // Handle submit button click
-function handleSubmit() { // Removed questionsToUse parameter
-    const currentQuestion = questionsToUse[currentQuestionIndex]; // Uses global questionsToUse
+function handleSubmit() {
+    const currentQuestion = questionsToUse[currentQuestionIndex];
     let correct = false;
     
     if (currentQuestion.type === 'fill-blank') {
@@ -455,7 +426,7 @@ function handleSubmit() { // Removed questionsToUse parameter
         correct = userAnswer.toLowerCase() === currentQuestion.correctAnswer.toLowerCase();
         inputField.disabled = true; // Disable input after submit
 
-        // Add visual feedback to input if needed (optional)
+        // Add visual feedback to input
         if (correct) {
             inputField.style.borderColor = '#2ecc71'; // Green border
             inputField.style.backgroundColor = '#eafaf1';
@@ -486,7 +457,7 @@ function handleSubmit() { // Removed questionsToUse parameter
     const currentTopic = currentQuestion.topic;
     if (correct) {
         topicScores[currentTopic].correct++;
-        topicScores[currentTopic].pointsCorrect += currentQuestion.points;
+        topicScores[currentTopic].pointsCorrect += currentQuestion.points || 1;
         score++;
     }
     
@@ -494,9 +465,11 @@ function handleSubmit() { // Removed questionsToUse parameter
     scoreElement.textContent = score;
 
     // Display feedback
+    feedbackElement.className = correct ? 'feedback-correct' : 'feedback-incorrect';
+    feedbackElement.style.display = 'block';
+    
     if (correct) {
         feedbackElement.innerHTML = "Correct!";
-        feedbackElement.className = 'feedback-correct';
     } else {
         let explanationText = '';
         if (currentQuestion.type === 'fill-blank') {
@@ -505,7 +478,6 @@ function handleSubmit() { // Removed questionsToUse parameter
             explanationText = `Incorrect. <span>${currentQuestion.explanation}</span>`;
         }
         feedbackElement.innerHTML = explanationText;
-        feedbackElement.className = 'feedback-incorrect';
 
         // --- Trigger Simulation for specific question ---
         // Check if this is the specific Alternate Function question for PC6
@@ -538,19 +510,16 @@ function handleSubmit() { // Removed questionsToUse parameter
 }
 
 // Handle next question button click
-function handleNextQuestion() { // Removed questionsToUse parameter
+function handleNextQuestion() {
     currentQuestionIndex++;
-    loadQuestion(questionsToUse); // loadQuestion still needs it to know which question to load
+    loadQuestion(questionsToUse);
 }
 
 // Show final results
 function showFinalResults(questionsToUse) {
-    quizAreaElement.style.display = 'none';
+    gameScreen.style.display = 'none';
     finalResultsElement.style.display = 'block';
     
-    const overallPoints = Object.values(topicScores).reduce((sum, ts) => sum + ts.pointsCorrect, 0);
-    const overallTotalPoints = Object.values(topicScores).reduce((sum, ts) => sum + ts.pointsTotal, 0);
-
     finalScoreElement.textContent = score;
     finalTotalElement.textContent = questionsToUse.length;
 
@@ -562,8 +531,9 @@ function showFinalResults(questionsToUse) {
     const sortedTopics = Object.keys(topicScores).sort();
     sortedTopics.forEach(topic => {
         const ts = topicScores[topic];
-        // Display both count and points
-        breakdownHtml += `<li>${topic}: ${ts.correct}/${ts.total} questions (${ts.pointsCorrect}/${ts.pointsTotal} points)</li>`;
+        if (ts.total > 0) { // Only show topics that had questions
+            breakdownHtml += `<li>${topic}: ${ts.correct}/${ts.total} questions</li>`;
+        }
     });
     
     breakdownHtml += '</ul>';
@@ -572,39 +542,65 @@ function showFinalResults(questionsToUse) {
 
 // --- Event Listeners ---
 // Start button click
-startSelectedButton.addEventListener('click', () => {
-    const selectedCheckboxes = document.querySelectorAll('#topic-selection input[name="topics"]:checked');
-    const selectedTopics = Array.from(selectedCheckboxes).map(cb => cb.value);
+startButton.addEventListener('click', () => {
+    // Get selected topics from the topic buttons
+    const selectedTopicButtons = document.querySelectorAll('.topic-btn.selected');
+    const selectedTopics = Array.from(selectedTopicButtons).map(btn => btn.dataset.topic);
     
-    if (selectedTopics.length === 0) {
-        topicErrorElement.style.display = 'block'; // Show error message
-        return;
+    if (selectedTopics.includes('all')) {
+        // If "All Topics" is selected, use all questions
+        startGame(false);
+    } else {
+        // Otherwise filter questions by selected topics
+        filteredQuestions = questions.filter(q => selectedTopics.includes(q.topic));
+        startGame(true);
     }
-    
-    topicErrorElement.style.display = 'none'; // Hide error message
-    filteredQuestions = questions.filter(q => selectedTopics.includes(q.topic));
-    
-    // Hide setup, show main quiz
-    setupContainer.style.display = 'none';
-    mainContainer.style.display = 'block';
-    
-    startGame(true); // Pass flag to use filtered questions
+});
+
+// Topic button click
+document.querySelectorAll('.topic-btn').forEach(button => {
+    button.addEventListener('click', () => {
+        if (button.dataset.topic === 'all') {
+            // If 'All Topics' is clicked, deselect all other topics
+            document.querySelectorAll('.topic-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            button.classList.add('selected');
+        } else {
+            // If a specific topic is clicked, deselect 'All Topics'
+            document.querySelector('.topic-btn[data-topic="all"]').classList.remove('selected');
+            // Toggle selection of this topic
+            button.classList.toggle('selected');
+            
+            // If no topics are selected, reselect 'All Topics'
+            if (document.querySelectorAll('.topic-btn.selected').length === 0) {
+                document.querySelector('.topic-btn[data-topic="all"]').classList.add('selected');
+            }
+        }
+    });
 });
 
 // Submit button click
-submitButton.addEventListener('click', handleSubmit); // Call without argument
+submitButton.addEventListener('click', handleSubmit);
 
 // Next button click
-nextButton.addEventListener('click', handleNextQuestion); // Call without argument
+nextButton.addEventListener('click', handleNextQuestion);
 
 // Restart button click
 restartButton.addEventListener('click', () => {
-    mainContainer.style.display = 'none';
-    setupContainer.style.display = 'block';
+    gameScreen.style.display = 'none';
+    topicSelectionScreen.style.display = 'block';
+});
+
+// End button click
+document.getElementById('end-btn').addEventListener('click', () => {
+    if (confirm('Are you sure you want to end the practice?')) {
+        showFinalResults(questionsToUse);
+    }
 });
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
-    populateTopicSelection();
+    // Set all questions as default
     questionsToUse = questions;
 });
