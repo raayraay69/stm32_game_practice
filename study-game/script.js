@@ -11,6 +11,8 @@ const finalResultsElement = document.getElementById('final-results');
 const finalScoreElement = document.getElementById('final-score');
 const finalTotalElement = document.getElementById('final-total');
 const restartButton = document.getElementById('restart-btn');
+const startButton = document.getElementById('start-btn'); // Corrected ID
+const topicButtons = document.querySelectorAll('.topic-btn');
 
 // --- Questions Database ---
 // Structure: { question: "", resources: ["Snippet 1", "Snippet 2..."], options: ["Opt A", "Opt B"...], correctIndex: 0, explanation: "" }
@@ -506,11 +508,13 @@ let currentQuestionIndex = 0;
 let score = 0;
 let selectedAnswerIndex = null; // Track which button is clicked
 let questionsToUse = [];
+let selectedTopics = [];
 
 // --- Functions ---
 
 function startGame(useFiltered = false) {
-    questionsToUse = [...questions]; // Use a copy of the questions array
+    // Filter questions based on selected topics if any topics are selected
+    questionsToUse = selectedTopics.length > 0 ? questions.filter(q => selectedTopics.includes(q.topic)) : [...questions];
     
     // Reset game state
     currentQuestionIndex = 0;
@@ -523,6 +527,9 @@ function startGame(useFiltered = false) {
     
     // Shuffle questions for variety
     shuffleArray(questionsToUse);
+
+    // Hide topic buttons and show question interface
+    document.getElementById('topic-selection').classList.add('hidden');
     
     // Load the first question
     loadQuestion(questionsToUse);
@@ -735,3 +742,25 @@ function createRegisterView(container, simulation) {
     regValue.textContent = simulation.value || "0x00000000";
     register.appendChild(regValue);
 }
+
+// --- Event Listeners ---
+
+// Start button
+if (startButton) {
+    startButton.addEventListener('click', startGame);
+}
+
+// Topic selection buttons
+topicButtons.forEach(button => {
+    button.addEventListener('click', () => {
+        button.classList.toggle('selected');
+        const topic = button.dataset.topic;
+        if (button.classList.contains('selected')) {
+            selectedTopics.push(topic);
+        } else {
+            selectedTopics = selectedTopics.filter(t => t !== topic);
+        }
+        console.log("Selected Topics:", selectedTopics);
+    });
+});
+
