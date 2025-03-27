@@ -64,6 +64,8 @@ void game_init(void) {
     // Initialize obstacles
     for (int i = 0; i < 5; i++) {
         obstacles[i].active = 0;
+        obstacles[i].position = -1; // Or any other invalid/off-screen position
+        obstacles[i].height = 0;    // Or any other default height
     }
     
     gameState = GAME_MENU;
