@@ -1,21 +1,25 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // DOM Element References
+    // --- DOM Element References ---
+    // Ensure these IDs match your HTML file exactly!
     const questionTextElement = document.getElementById('question-text');
     const referenceContentElement = document.getElementById('reference-content');
-    const answerOptionsElement = document.getElementById('answer-options');
+    const answerOptionsElement = document.getElementById('input-area'); // Make sure HTML has id="input-area"
     const submitButton = document.getElementById('submit-btn');
     const nextButton = document.getElementById('next-btn');
-    const feedbackElement = document.getElementById('feedback');
+    const feedbackElement = document.getElementById('feedback-area');
     const scoreElement = document.getElementById('score');
     const totalQuestionsElement = document.getElementById('total-questions');
-    const finalResultsElement = document.getElementById('final-results');
+    const finalResultsElement = document.getElementById('results-screen');
     const finalScoreElement = document.getElementById('final-score');
     const finalTotalElement = document.getElementById('final-total');
     const restartButton = document.getElementById('restart-btn');
     const startButton = document.getElementById('start-btn');
     const topicButtons = document.querySelectorAll('.topic-btn');
-    const topicSelectionContainer = document.getElementById('topic-selection');
-    const questionContainer = document.getElementById('question-container'); // Assuming the game area has this ID
+    const topicSelectionScreen = document.getElementById('topic-selection-screen');
+    const gameScreen = document.getElementById('game-screen');
+    // Using class selector for questionContainer, ensure it exists if needed elsewhere.
+    const questionContainer = document.querySelector('.question-container');
+
 
     // --- Questions Database ---
     // Structure: { question: "", resources: ["Snippet 1", "Snippet 2..."], options: ["Opt A", "Opt B"...], correctIndex: 0, explanation: "" }
@@ -93,27 +97,9 @@ document.addEventListener('DOMContentLoaded', () => {
             simulation: {
                 type: "bit-manipulation",
                 steps: [
-                    {
-                        register: "RCC_AHBENR",
-                        operation: "set",
-                        bits: "19",
-                        value: "0x00080000",
-                        description: "Enable GPIOC clock"
-                    },
-                    {
-                        register: "GPIOC_MODER",
-                        operation: "clear",
-                        bits: "11:8",
-                        mask: "0x00000F00",
-                        description: "Clear mode bits for PC4-PC5"
-                    },
-                    {
-                        register: "GPIOC_MODER",
-                        operation: "set",
-                        bits: "11:8",
-                        value: "0x00000500",
-                        description: "Set PC4-PC5 to output mode (01)"
-                    }
+                    { register: "RCC_AHBENR", operation: "set", bits: "19", value: "0x00080000", description: "Enable GPIOC clock" },
+                    { register: "GPIOC_MODER", operation: "clear", bits: "11:8", mask: "0x00000F00", description: "Clear mode bits for PC4-PC5" },
+                    { register: "GPIOC_MODER", operation: "set", bits: "11:8", value: "0x00000500", description: "Set PC4-PC5 to output mode (01)" }
                 ]
             }
         },
@@ -125,21 +111,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 "PWM Frequency = Timer Clock Frequency / (ARR + 1)",
                 "System Clock = 48,000,000 Hz"
             ],
-            options: [
-                "999",
-                "1000",
-                "47999",
-                "48000"
-            ],
+            options: ["999", "1000", "47999", "48000"],
             correctIndex: 0,
             explanation: "Timer Clock = 48MHz / (47999 + 1) = 48MHz / 48000 = 1000 Hz (1 kHz). To get 1 Hz PWM: 1 Hz = 1000 Hz / (ARR + 1). So, ARR + 1 = 1000. ARR = 999.",
-            simulation: {
-                type: "timer-calculation",
-                systemClock: 48000000,
-                psc: 47999,
-                targetFrequency: 1,
-                formula: "ARR = (SystemClock / (PSC+1) / TargetFreq) - 1"
-            }
+            simulation: { type: "timer-calculation", systemClock: 48000000, psc: 47999, targetFrequency: 1, formula: "ARR = (SystemClock / (PSC+1) / TargetFreq) - 1" }
         },
          {
             topic: "Timers/PWM",
@@ -151,21 +126,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 "<b>TIMx CCRx:</b> Capture/Compare Register (determines duty cycle).",
                 "PWM Mode 1 is typically <code>110</code> for OCxM bits."
             ],
-            options: [
-                "TIMx->CR1",
-                "TIMx->CCER",
-                "TIMx->CCMRx (e.g., CCMR1 for CH1/CH2)",
-            "TIMx->ARR"
-            ],
+            options: ["TIMx->CR1", "TIMx->CCER", "TIMx->CCMRx (e.g., CCMR1 for CH1/CH2)", "TIMx->ARR"],
             correctIndex: 2,
             explanation: "The Capture/Compare Mode Register (CCMRx) contains the Output Compare Mode (OCxM) bits, which are set to configure a channel for PWM operation.",
-            simulation: {
-                type: "timer-pwm-setup",
-                channel: 1,
-                register: "TIM3_CCMR1",
-                bits: "6:4",
-                value: "0x00000060" // Binary: 0110 0000
-            }
+            simulation: { type: "timer-pwm-setup", channel: 1, register: "TIM3_CCMR1", bits: "6:4", value: "0x00000060" }
         },
         {
             topic: "ADC",
@@ -176,31 +140,14 @@ document.addEventListener('DOMContentLoaded', () => {
                  "Bit 15: <code>HSI14RDY</code> - 14 MHz internal RC oscillator ready flag.",
                 "The STM32F0 ADC requires the HSI14 clock."
             ],
-            options: [
-                "The main PLL",
-                "The LSI oscillator",
-                "The HSI14 oscillator",
-                "The HSE oscillator"
-            ],
+            options: ["The main PLL", "The LSI oscillator", "The HSI14 oscillator", "The HSE oscillator"],
             correctIndex: 2,
             explanation: "The STM32F0 series ADC relies on the dedicated 14 MHz High-Speed Internal oscillator (HSI14). You must enable it (HSI14ON) and wait for it to be ready (HSI14RDY) before enabling the ADC itself.",
             simulation: {
                 type: "adc-clock-setup",
                 steps: [
-                    {
-                        register: "RCC_CR2",
-                        operation: "set",
-                        bits: "14",
-                        value: "0x00004000",
-                        description: "Enable HSI14 clock"
-                    },
-                    {
-                        register: "RCC_CR2",
-                        operation: "wait",
-                        bits: "15",
-                        mask: "0x00008000",
-                        description: "Wait for HSI14RDY flag"
-                    }
+                    { register: "RCC_CR2", operation: "set", bits: "14", value: "0x00004000", description: "Enable HSI14 clock" },
+                    { register: "RCC_CR2", operation: "wait", bits: "15", mask: "0x00008000", description: "Wait for HSI14RDY flag" }
                 ]
             }
         },
@@ -213,37 +160,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 "<b>ADC DR (Data Register):</b> Holds the converted digital value.",
                 "ADC CHSELR (Channel Selection Register):</b> Selects input channel(s)."
             ],
-            options: [
-                "ADC->CR",
-                "ADC->ISR",
-                "ADC->DR",
-                "ADC->CHSELR"
-            ],
+            options: ["ADC->CR", "ADC->ISR", "ADC->DR", "ADC->CHSELR"],
             correctIndex: 2,
             explanation: "The ADC Data Register (ADC->DR) holds the digital result once a conversion is complete.",
             simulation: {
                 type: "adc-conversion",
                 steps: [
-                    {
-                        register: "ADC_CR",
-                        operation: "set",
-                        bits: "2",
-                        value: "0x00000004",
-                        description: "Start conversion (ADSTART)"
-                    },
-                    {
-                        register: "ADC_ISR",
-                        operation: "wait",
-                        bits: "2",
-                        mask: "0x00000004",
-                        description: "Wait for EOC flag"
-                    },
-                    {
-                        register: "ADC_DR",
-                        operation: "read",
-                        value: "0x00000800",
-                        description: "Read conversion result (2048)"
-                    }
+                    { register: "ADC_CR", operation: "set", bits: "2", value: "0x00000004", description: "Start conversion (ADSTART)" },
+                    { register: "ADC_ISR", operation: "wait", bits: "2", mask: "0x00000004", description: "Wait for EOC flag" },
+                    { register: "ADC_DR", operation: "read", value: "0x00000800", description: "Read conversion result (2048)" }
                 ]
             }
         },
@@ -256,35 +181,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 "<b>DAC DOR1 (Channel 1 Data Output Register):</b> Read-only, shows current output value.",
                 "GPIOx MODER:</b> Must set PA4 to Analog mode (<code>11</code>)."
             ],
-            options: [
-                "DAC->CR",
-                "DAC->DHR12R1",
-                "DAC->DOR1",
-                "GPIOA->ODR"
-            ],
+            options: ["DAC->CR", "DAC->DHR12R1", "DAC->DOR1", "GPIOA->ODR"],
             correctIndex: 1,
             explanation: "The digital value (0-4095 for 12-bit) to be converted to an analog voltage by DAC Channel 1 is written to the Data Holding Register DHR12R1.",
             simulation: {
-                type: "dac-output",
-                register: "DAC_DHR12R1",
-                value: "0x00000800", // 2048 = ~1.65V for 3.3V VREF
-                output: "1.65V",
+                type: "dac-output", register: "DAC_DHR12R1", value: "0x00000800", output: "1.65V",
                 steps: [
-                    {
-                        description: "PA4 configured as analog (GPIOA->MODER bits 9:8 = 11)"
-                    },
-                    {
-                        description: "DAC clock enabled (RCC->APB1ENR bit DAC1EN set)"
-                    },
-                    {
-                        description: "DAC Channel 1 enabled (DAC->CR bit EN1 set)"
-                    },
-                    {
-                        register: "DAC_DHR12R1",
-                        operation: "write",
-                        value: "0x00000800",
-                        description: "Write value to DHR12R1"
-                    }
+                    { description: "PA4 configured as analog (GPIOA->MODER bits 9:8 = 11)" },
+                    { description: "DAC clock enabled (RCC->APB1ENR bit DAC1EN set)" },
+                    { description: "DAC Channel 1 enabled (DAC->CR bit EN1 set)" },
+                    { register: "DAC_DHR12R1", operation: "write", value: "0x00000800", description: "Write value to DHR12R1" }
                 ]
             }
         },
@@ -299,19 +205,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 "Bit 5: <code>CIRC</code> - Circular mode",
                 "Bit 7: <code>MINC</code> - Memory increment mode"
             ],
-            options: [
-                "0 (Read from peripheral)",
-                "1 (Read from memory)"
-            ],
+            options: ["0 (Read from peripheral)", "1 (Read from memory)"],
             correctIndex: 1,
             explanation: "For Memory-to-Peripheral transfers (like sending data from RAM to GPIO), the DIR bit must be set to 1.",
-            simulation: {
-                type: "dma-config",
-                register: "DMA_CCR",
-                bits: "4",
-                value: "0x00000010",
-                description: "Memory to Peripheral direction bit"
-            }
+            simulation: { type: "dma-config", register: "DMA_CCR", bits: "4", value: "0x00000010", description: "Memory to Peripheral direction bit" }
         },
          {
             topic: "DMA",
@@ -322,24 +219,12 @@ document.addEventListener('DOMContentLoaded', () => {
                  "The counter decrements after each transfer.",
                  "Transfer stops when it reaches 0 (unless in circular mode)."
             ],
-            options: [
-                "1", // Single transfer
-                "8", // Correct number of units
-                "16", // Size of each unit in bits, not count
-                "Depends on the peripheral data register size" // CNDTR is count, not size
-            ],
+            options: ["1", "8", "16", "Depends on the peripheral data register size"],
             correctIndex: 1,
             explanation: "CNDTR specifies the *number* of data units (as defined by PSIZE/MSIZE) to transfer. If you're transferring 8 items from the `msg` array, CNDTR should be 8.",
             simulation: {
-                type: "dma-transfer",
-                register: "DMA1_Channel5_CNDTR",
-                value: "0x00000008",
-                transfer: {
-                    source: "msg[8]",
-                    destination: "GPIOB->ODR",
-                    count: 8,
-                    dataSize: "16-bit"
-                }
+                type: "dma-transfer", register: "DMA1_Channel5_CNDTR", value: "0x00000008",
+                transfer: { source: "msg[8]", destination: "GPIOB->ODR", count: 8, dataSize: "16-bit" }
             }
         },
         {
@@ -351,46 +236,16 @@ document.addEventListener('DOMContentLoaded', () => {
                  "Data size (DS) bits are in CR2.",
                  "<b>Reference Manual Note:</b> The SPI must be disabled (SPE=0) before changing most configuration bits."
             ],
-            options: [
-                "Enable the SPI peripheral (set SPE=1)",
-                "Disable the SPI peripheral (clear SPE=0)",
-                "Enable the relevant DMA channel",
-                "Set the NSSP bit in CR2"
-            ],
+            options: ["Enable the SPI peripheral (set SPE=1)", "Disable the SPI peripheral (clear SPE=0)", "Enable the relevant DMA channel", "Set the NSSP bit in CR2"],
             correctIndex: 1,
             explanation: "It's crucial to disable the SPI peripheral by clearing the SPE bit in SPI_CR1 *before* changing configuration parameters like baud rate, clock polarity/phase, master/slave mode, or data size.",
             simulation: {
                 type: "spi-config",
                 steps: [
-                    {
-                        register: "SPI1_CR1",
-                        operation: "clear",
-                        bits: "6",
-                        mask: "0x00000040",
-                        value: "0x00000000",
-                        description: "Disable SPI (SPE=0)"
-                    },
-                    {
-                        register: "SPI1_CR1",
-                        operation: "set",
-                        bits: "5:3",
-                        value: "0x00000018",
-                        description: "Configure BR bits for baud rate"
-                    },
-                    {
-                        register: "SPI1_CR2",
-                        operation: "set",
-                        bits: "11:8",
-                        value: "0x00000700",
-                        description: "Set DS bits for 8-bit data size"
-                    },
-                    {
-                        register: "SPI1_CR1",
-                        operation: "set",
-                        bits: "6",
-                        value: "0x00000040",
-                        description: "Enable SPI (SPE=1)"
-                    }
+                    { register: "SPI1_CR1", operation: "clear", bits: "6", mask: "0x00000040", value: "0x00000000", description: "Disable SPI (SPE=0)" },
+                    { register: "SPI1_CR1", operation: "set", bits: "5:3", value: "0x00000018", description: "Configure BR bits for baud rate" },
+                    { register: "SPI1_CR2", operation: "set", bits: "11:8", value: "0x00000700", description: "Set DS bits for 8-bit data size" },
+                    { register: "SPI1_CR1", operation: "set", bits: "6", value: "0x00000040", description: "Enable SPI (SPE=1)" }
                 ]
             }
         },
@@ -402,17 +257,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 "<b>SPI_CR2 Register:</b> Contains DS (Data Size), SSOE, NSSP, TXDMAEN (TX DMA Enable), RXDMAEN bits.",
                  "MSTR=1 for Master mode. DS bits set for 8-bit. TXDMAEN=1 to enable DMA requests on TX empty."
             ],
-            options: [
-                "SPI1->CR1",
-                "SPI1->CR2",
-                "SPI1->SR (Status Register)",
-                "DMA1_Channel3->CCR"
-            ],
+            options: ["SPI1->CR1", "SPI1->CR2", "SPI1->SR (Status Register)", "DMA1_Channel3->CCR"],
             correctIndex: 0,
             explanation: "SPI_CR1 contains the main control bits, including MSTR (Master/Slave Selection) and SPE (SPI Enable).",
             simulation: {
-                type: "register-view",
-                register: "SPI1_CR1",
+                type: "register-view", register: "SPI1_CR1",
                 bitFields: [
                     { bits: "6", name: "SPE", description: "SPI Enable" },
                     { bits: "2", name: "MSTR", description: "Master Selection" },
@@ -430,32 +279,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 "<b>NVIC_EnableIRQ(IRQn_Type IRQn):</b> Function to enable a specific interrupt line in the NVIC.",
                  "<b>NVIC_SetPriority(IRQn_Type IRQn, uint32_t priority):</b> Sets interrupt priority."
             ],
-            options: [
-                "Set the global interrupt enable bit in the CPU's status register",
-                "Call the corresponding Interrupt Service Routine (ISR) function manually",
-                "Enable the corresponding interrupt line in the NVIC using `NVIC_EnableIRQ()`",
-                "Clear the interrupt pending flag in the peripheral"
-            ],
+            options: ["Set the global interrupt enable bit in the CPU's status register", "Call the corresponding Interrupt Service Routine (ISR) function manually", "Enable the corresponding interrupt line in the NVIC using `NVIC_EnableIRQ()`", "Clear the interrupt pending flag in the peripheral"],
             correctIndex: 2,
             explanation: "Even if a peripheral generates an interrupt request, the CPU won't process it unless that specific interrupt line is enabled in the NVIC (Nested Vectored Interrupt Controller) using functions like `NVIC_EnableIRQ()`.",
             simulation: {
                 type: "interrupt-setup",
                 steps: [
-                    {
-                        register: "TIM7_DIER",
-                        operation: "set",
-                        bits: "0",
-                        value: "0x00000001",
-                        description: "Enable Update Interrupt (UIE)"
-                    },
-                    {
-                        function: "NVIC_EnableIRQ(TIM7_IRQn)",
-                        register: "NVIC_ISER0",
-                        operation: "set",
-                        bits: "18", // Assuming TIM7_IRQn = 18
-                        value: "0x00040000",
-                        description: "Enable TIM7 interrupt in NVIC"
-                    }
+                    { register: "TIM7_DIER", operation: "set", bits: "0", value: "0x00000001", description: "Enable Update Interrupt (UIE)" },
+                    { function: "NVIC_EnableIRQ(TIM7_IRQn)", register: "NVIC_ISER0", operation: "set", bits: "18", value: "0x00040000", description: "Enable TIM7 interrupt in NVIC" }
                 ]
             }
         },
@@ -467,21 +298,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 "The counter clock frequency CK_CNT = fCK_PSC / (PSC + 1)",
                 "System clock (fCK_PSC) = 48 MHz in this case."
             ],
-            options: [
-                "47",
-                "48",
-                "49",
-                "0"
-            ],
+            options: ["47", "48", "49", "0"],
             correctIndex: 0,
             explanation: "To divide the timer clock by 48, you need PSC = 48-1 = 47. This is because the division factor is (PSC + 1).",
-            simulation: {
-                type: "timer-clock",
-                systemClock: 48000000,
-                prescaler: 47,
-                result: 1000000, // 1 MHz
-                formula: "Timer Clock = System Clock / (PSC + 1)"
-            }
+            simulation: { type: "timer-clock", systemClock: 48000000, prescaler: 47, result: 1000000, formula: "Timer Clock = System Clock / (PSC + 1)" }
         },
         {
             topic: "Interrupts",
@@ -506,7 +326,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     ];
 
-    // Global variables
+    // --- Global variables ---
     let currentQuestionIndex = 0;
     let score = 0;
     let selectedAnswerIndex = null; // Track which button is clicked
@@ -517,8 +337,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function startGame() {
         // Filter questions based on selected topics if any *specific* topics are selected
-        // If 'All Topics' is selected (meaning selectedTopics array includes all specific topics or was explicitly clicked), use all questions.
         const allButton = document.querySelector('.topic-btn[data-topic="all"]');
+        // Ensure allButton exists before checking its classList
         const useAllTopics = allButton && allButton.classList.contains('selected');
 
         if (!useAllTopics && selectedTopics.length > 0) {
@@ -537,24 +357,18 @@ document.addEventListener('DOMContentLoaded', () => {
         // Reset game state
         currentQuestionIndex = 0;
         score = 0;
-        finalResultsElement.classList.add('hidden');
-        if (questionContainer) questionContainer.classList.remove('hidden'); // Show question area
+        if (finalResultsElement) finalResultsElement.classList.add('hidden');
+        if (gameScreen) gameScreen.classList.remove('hidden'); // Show game screen
 
-        // Update score display
-        scoreElement.textContent = score;
-        totalQuestionsElement.textContent = questionsToUse.length;
+        // Update score display (check if elements exist)
+        if (scoreElement) scoreElement.textContent = score;
+        if (totalQuestionsElement) totalQuestionsElement.textContent = questionsToUse.length;
 
         // Shuffle questions for variety
         shuffleArray(questionsToUse);
 
         // Hide topic selection and show question interface
-        if (topicSelectionContainer) {            
-            topicSelectionContainer.classList.add('hidden');
-        } else {
-            console.error("Topic selection container not found!");
-        }
-
-
+        if (topicSelectionScreen) topicSelectionScreen.classList.add('hidden');
 
         // Load the first question
         loadQuestion(); // Pass questionsToUse implicitly via global scope
@@ -570,71 +384,99 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function loadQuestion() {
         // Reset state from previous question
-        feedbackElement.className = 'feedback-hidden'; // Hide feedback
-        feedbackElement.innerHTML = '';
-        submitButton.classList.remove('hidden');
-        nextButton.classList.add('hidden');
-        submitButton.disabled = true; // Disable until an answer is selected
+        if (feedbackElement) {
+            feedbackElement.classList.add('hidden'); // Use classList for consistency
+            feedbackElement.classList.remove('feedback-correct', 'feedback-incorrect'); // Clear state classes
+            feedbackElement.innerHTML = '';
+        }
+        if (submitButton) {
+            submitButton.classList.remove('hidden');
+            submitButton.disabled = true; // Disable until an answer is selected
+        }
+        if (nextButton) {
+            nextButton.classList.add('hidden');
+        }
         selectedAnswerIndex = null;
 
-        // Check if questionsToUse is populated
+        // Check if questionsToUse is populated and index is valid
         if (!questionsToUse || questionsToUse.length === 0 || currentQuestionIndex >= questionsToUse.length) {
             console.error("Error loading question: questionsToUse is invalid or index out of bounds.");
-            // Optionally show an error message to the user
-            showFinalResults(); // Or handle error appropriately
+            showFinalResults(); // Go to results if questions run out or error
             return;
         }
 
         const currentQuestion = questionsToUse[currentQuestionIndex];
 
-        // Display Question
-        questionTextElement.textContent = `(${currentQuestion.topic}) ${currentQuestion.question}`;
-
-        // Display Reference Material
-        referenceContentElement.innerHTML = ''; // Clear previous references
-        if (currentQuestion.resources) {
-            currentQuestion.resources.forEach(res => {
-                const p = document.createElement('p');
-                p.innerHTML = res; // Use innerHTML to parse <code> tags etc.
-                referenceContentElement.appendChild(p);
-            });
-        }
-
-        // Display Answer Options based on question type
-        answerOptionsElement.innerHTML = ''; // Clear previous options
-
-        if (currentQuestion.type === 'fill-blank') {
-            // Create a text input for fill-in-the-blank
-            const inputField = document.createElement('input');
-            inputField.type = 'text';
-            inputField.id = 'fill-blank-input';
-            inputField.placeholder = 'Type your answer here...';
-            inputField.classList.add('fill-blank-input');
-
-            inputField.addEventListener('input', () => {
-                submitButton.disabled = inputField.value.trim() === '';
-            });
-
-            inputField.addEventListener('keyup', (event) => {
-                if (event.key === 'Enter' && !submitButton.disabled) {
-                    handleSubmit();
-                }
-            });
-
-            answerOptionsElement.appendChild(inputField);
-            // Focus the input field automatically
-             setTimeout(() => inputField.focus(), 0);
+        // Display Question (check element exists)
+        if (questionTextElement) {
+            questionTextElement.textContent = `(${currentQuestion.topic}) ${currentQuestion.question}`;
         } else {
-            // Default to multiple choice
-            currentQuestion.options.forEach((option, index) => {
-                const button = document.createElement('button');
-                button.innerHTML = option; // Use innerHTML for code formatting
-                button.dataset.index = index; // Store the index
-                button.classList.add('option-btn');
-                button.addEventListener('click', () => handleOptionSelect(button, index));
-                answerOptionsElement.appendChild(button);
-            });
+            console.error("Question text element not found!");
         }
+
+
+        // Display Reference Material (check element exists)
+        if (referenceContentElement) {
+            referenceContentElement.innerHTML = ''; // Clear previous references
+            if (currentQuestion.resources) {
+                currentQuestion.resources.forEach(res => {
+                    const p = document.createElement('p');
+                    p.innerHTML = res; // Use innerHTML to parse <code> tags etc.
+                    referenceContentElement.appendChild(p);
+                });
+            }
+        } else {
+            console.error("Reference content element not found!");
+        }
+
+
+        // Display Answer Options based on question type (check element exists)
+        if (answerOptionsElement) {
+            answerOptionsElement.innerHTML = ''; // Clear previous options
+
+            if (currentQuestion.type === 'fill-blank') {
+                // Create a text input for fill-in-the-blank
+                const inputField = document.createElement('input');
+                inputField.type = 'text';
+                inputField.id = 'fill-blank-input';
+                inputField.placeholder = 'Type your answer here...';
+                inputField.classList.add('fill-blank-input');
+
+                inputField.addEventListener('input', () => {
+                    if (submitButton) { // Check submitButton exists
+                         submitButton.disabled = inputField.value.trim() === '';
+                    }
+                });
+
+                inputField.addEventListener('keyup', (event) => {
+                    // Check submitButton exists and is not disabled
+                    if (event.key === 'Enter' && submitButton && !submitButton.disabled) {
+                        handleSubmit();
+                    }
+                });
+
+                answerOptionsElement.appendChild(inputField);
+                // Focus the input field automatically
+                 setTimeout(() => inputField.focus(), 0);
+            } else {
+                // Default to multiple choice
+                if (currentQuestion.options) { // Check if options exist
+                    currentQuestion.options.forEach((option, index) => {
+                        const button = document.createElement('button');
+                        button.innerHTML = option; // Use innerHTML for code formatting
+                        button.dataset.index = index; // Store the index
+                        button.classList.add('option-btn');
+                        button.addEventListener('click', () => handleOptionSelect(button, index));
+                        answerOptionsElement.appendChild(button);
+                    });
+                } else {
+                     console.error("Question is missing 'options' array:", currentQuestion);
+                }
+            }
+        } else {
+             console.error("Answer options element (#input-area) not found!");
+        }
+
 
         // Set up simulation preview if available
         // Clear previous simulation first
@@ -644,12 +486,14 @@ document.addEventListener('DOMContentLoaded', () => {
             simContainer.classList.add('hidden'); // Hide until needed
         }
         if (currentQuestion.simulation) {
-            // We might delay showing the simulation until after submission
-            // setupSimulationPreview(currentQuestion.simulation);
+            // Simulation display logic might go here or in handleSubmit/setupSimulationPreview
         }
     }
 
     function handleOptionSelect(button, index) {
+        // Ensure answerOptionsElement exists before querying it
+         if (!answerOptionsElement) return;
+
         // Remove 'selected' class from previously selected button (if any)
         const previouslySelected = answerOptionsElement.querySelector('.option-btn.selected');
         if (previouslySelected) {
@@ -659,10 +503,24 @@ document.addEventListener('DOMContentLoaded', () => {
         // Add 'selected' class to the clicked button
         button.classList.add('selected');
         selectedAnswerIndex = index;
-        submitButton.disabled = false; // Enable submit button
+
+        // Enable submit button (check it exists)
+        if (submitButton) submitButton.disabled = false;
     }
 
     function handleSubmit() {
+         // Ensure essential elements exist
+        if (!feedbackElement || !submitButton || !nextButton || !answerOptionsElement) {
+            console.error("Cannot handle submit - core elements missing.");
+            return;
+        }
+         // Ensure question data is valid
+        if (!questionsToUse || currentQuestionIndex >= questionsToUse.length) {
+            console.error("Cannot handle submit - invalid question state.");
+            showFinalResults();
+            return;
+        }
+
         const currentQuestion = questionsToUse[currentQuestionIndex];
         let isCorrect = false;
 
@@ -671,30 +529,49 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (currentQuestion.type === 'fill-blank') {
             const inputField = document.getElementById('fill-blank-input');
-            const userAnswer = inputField.value.trim();
-            // Case-insensitive comparison might be good
-            isCorrect = userAnswer.toLowerCase() === currentQuestion.correctAnswer.toLowerCase();
-            inputField.disabled = true; // Disable input after submission
-
-             feedbackElement.innerHTML = `Your answer: ${userAnswer}<br>`; // Show user's answer
+            if (inputField) { // Check if input field exists
+                const userAnswer = inputField.value.trim();
+                // Case-insensitive comparison
+                isCorrect = userAnswer.toLowerCase() === (currentQuestion.correctAnswer || '').toLowerCase();
+                inputField.disabled = true; // Disable input after submission
+                feedbackElement.innerHTML = `Your answer: ${userAnswer}<br>`; // Show user's answer
+            } else {
+                console.error("Fill-blank input field not found during submit.");
+                feedbackElement.innerHTML = 'Error processing answer.<br>';
+            }
 
         } else {
             // Multiple choice
-            if (selectedAnswerIndex === null) return; // Should not happen if button is enabled
+            if (selectedAnswerIndex === null) {
+                 console.warn("Submit called with no answer selected.");
+                 // Re-show submit, hide next if needed? Or just proceed as incorrect?
+                 // For simplicity, treat as incorrect or just return
+                 // Let's treat as incorrect for now.
+                 feedbackElement.innerHTML = 'No answer selected.<br>';
+                 isCorrect = false; // Ensure isCorrect is false
+                 // Disable buttons anyway
+                 answerOptionsElement.querySelectorAll('.option-btn').forEach(btn => {
+                    btn.disabled = true;
+                 });
 
-            isCorrect = selectedAnswerIndex === currentQuestion.correctIndex;
+            } else {
+                isCorrect = selectedAnswerIndex === currentQuestion.correctIndex;
 
-            // Disable all option buttons after submission
-            answerOptionsElement.querySelectorAll('.option-btn').forEach(btn => {
-                btn.disabled = true;
-                // Highlight correct and incorrect answers
-                const btnIndex = parseInt(btn.dataset.index);
-                if (btnIndex === currentQuestion.correctIndex) {
-                    btn.classList.add('correct');
-                } else if (btnIndex === selectedAnswerIndex) {
-                    btn.classList.add('incorrect');
-                }
-            });
+                 // Disable all option buttons after submission
+                answerOptionsElement.querySelectorAll('.option-btn').forEach(btn => {
+                    btn.disabled = true;
+                    // Highlight correct and incorrect answers
+                    const btnIndex = parseInt(btn.dataset.index);
+                    if (btnIndex === currentQuestion.correctIndex) {
+                        btn.classList.add('correct');
+                    } else if (btnIndex === selectedAnswerIndex) {
+                        // Only add 'incorrect' if it wasn't the correct one already highlighted
+                        if (!btn.classList.contains('correct')) {
+                             btn.classList.add('incorrect');
+                        }
+                    }
+                });
+            }
         }
 
 
@@ -702,19 +579,25 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isCorrect) {
             score++;
             feedbackElement.innerHTML += `<b>Correct!</b> ${currentQuestion.explanation || ''}`;
-            feedbackElement.className = 'feedback-correct';
+            feedbackElement.classList.remove('hidden', 'feedback-incorrect');
+            feedbackElement.classList.add('feedback-correct');
         } else {
+            // Append to existing message (e.g., "No answer selected" or "Your answer: ...")
             feedbackElement.innerHTML += `<b>Incorrect.</b> ${currentQuestion.explanation || ''}`;
              if (currentQuestion.type !== 'fill-blank') {
-                 feedbackElement.innerHTML += `<br>Correct answer was: ${currentQuestion.options[currentQuestion.correctIndex]}`;
+                  // Check options exist before accessing
+                 if(currentQuestion.options && currentQuestion.correctIndex < currentQuestion.options.length){
+                    feedbackElement.innerHTML += `<br>Correct answer was: ${currentQuestion.options[currentQuestion.correctIndex]}`;
+                 }
              } else {
-                 feedbackElement.innerHTML += `<br>Correct answer was: ${currentQuestion.correctAnswer}`;
+                 feedbackElement.innerHTML += `<br>Correct answer was: ${currentQuestion.correctAnswer || 'N/A'}`;
              }
-            feedbackElement.className = 'feedback-incorrect';
+            feedbackElement.classList.remove('hidden', 'feedback-correct');
+            feedbackElement.classList.add('feedback-incorrect');
         }
 
-        // Update score display
-        scoreElement.textContent = score;
+        // Update score display (check element exists)
+        if (scoreElement) scoreElement.textContent = score;
 
         // Show simulation if available
         if (currentQuestion.simulation) {
@@ -734,48 +617,57 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function showFinalResults() {
-        if (questionContainer) questionContainer.classList.add('hidden'); // Hide question area
-        finalResultsElement.classList.remove('hidden'); // Show final results
-        finalScoreElement.textContent = score;
-        finalTotalElement.textContent = questionsToUse.length;
+        // Check elements exist before manipulating
+        if (gameScreen) gameScreen.classList.add('hidden'); // Hide game screen
+        if (finalResultsElement) finalResultsElement.classList.remove('hidden'); // Show final results
+        if (finalScoreElement) finalScoreElement.textContent = score;
+        if (finalTotalElement) finalTotalElement.textContent = questionsToUse.length > 0 ? questionsToUse.length : questions.length; // Show total attempted or total possible if 0 attempted
     }
 
     function restartGame() {
         // Reset state and show topic selection again
-        finalResultsElement.classList.add('hidden');
-        if (topicSelectionContainer) topicSelectionContainer.classList.remove('hidden');
-        if (questionContainer) questionContainer.classList.add('hidden');
+        if (finalResultsElement) finalResultsElement.classList.add('hidden');
+        if (topicSelectionScreen) topicSelectionScreen.classList.remove('hidden');
+        if (gameScreen) gameScreen.classList.add('hidden');
 
-        // Reset selections (optional, could keep last selection)
-        // selectedTopics = [];
-        // topicButtons.forEach(btn => btn.classList.remove('selected'));
-        // const allButton = document.querySelector('.topic-btn[data-topic="all"]');
-        // if (allButton) allButton.classList.add('selected'); // Default to all selected
-        // updateSelectedTopicsArray(); // Update based on visual state
+        // Optional: Reset topic selections visually to 'All' (uncomment if desired)
+        /*
+        const allButton = document.querySelector('.topic-btn[data-topic="all"]');
+        if (allButton) {
+            allButton.classList.add('selected');
+            topicButtons.forEach(btn => {
+                if (btn && btn !== allButton) btn.classList.add('selected');
+            });
+            updateSelectedTopicsArray(); // Update internal array
+        }
+        */
 
         // Reset score display potentially
-        scoreElement.textContent = 0;
-        totalQuestionsElement.textContent = questions.length; // Show total possible initially
+        if (scoreElement) scoreElement.textContent = 0;
+        if (totalQuestionsElement) totalQuestionsElement.textContent = questions.length; // Show total possible initially
     }
 
-    // --- Simulation Preview Functions --- (Placeholders - Implement as needed) ---
+    // --- Simulation Preview Functions --- (Placeholder) ---
     function setupSimulationPreview(simulation) {
         let simContainer = document.getElementById('simulation-preview');
         if (!simContainer) {
+            console.log("Creating simulation-preview container.");
             simContainer = document.createElement('div');
             simContainer.id = 'simulation-preview';
             simContainer.classList.add('simulation-preview');
             // Insert after reference material or another suitable place
-            const referenceContainer = document.querySelector('.reference-material');
+            const referenceContainer = document.querySelector('.reference-container');
              if (referenceContainer && referenceContainer.parentNode) {
-                referenceContainer.parentNode.insertBefore(simContainer, referenceContainer.nextSibling);
-            } else if (questionContainer) {
-                 // Fallback: append to question container if reference isn't found
-                 questionContainer.appendChild(simContainer);
-            } else {
-                console.error("Could not find a place to insert simulation preview.");
-                return; // Exit if no container found
-            }
+                 referenceContainer.parentNode.insertBefore(simContainer, referenceContainer.nextSibling);
+             } else if (questionContainer) { // Fallback: append to question container
+                  questionContainer.appendChild(simContainer);
+             } else if (gameScreen) { // Fallback 2: append to game screen
+                 gameScreen.appendChild(simContainer);
+             }
+             else {
+                 console.error("Could not find a place to insert simulation preview.");
+                 return; // Exit if no container found
+             }
         }
         simContainer.innerHTML = ''; // Clear previous content
         simContainer.classList.remove('hidden'); // Make sure it's visible
@@ -789,10 +681,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Basic display for now, expand later
         const pre = document.createElement('pre');
-        pre.textContent = JSON.stringify(simulation, null, 2);
+        pre.textContent = JSON.stringify(simulation, null, 2); // Pretty print JSON
         simContent.appendChild(pre);
 
-        // Add more specific simulation rendering based on type later
+        // TODO: Add more specific simulation rendering based on type later
         // switch (simulation.type) {
         //     case 'register-view': createRegisterView(simContent, simulation); break;
         //     // ... other cases
@@ -804,15 +696,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Helper to update selectedTopics array based on button classes ---
     function updateSelectedTopicsArray() {
-         const specificTopicButtons = document.querySelectorAll('.topic-btn:not([data-topic="all"])');
-         selectedTopics = Array.from(specificTopicButtons)
-                            .filter(btn => btn.classList.contains('selected'))
-                            .map(btn => btn.dataset.topic);
-         console.log("Updated Selected Topics:", selectedTopics);
+          const specificTopicButtons = document.querySelectorAll('.topic-btn:not([data-topic="all"])');
+          selectedTopics = Array.from(specificTopicButtons)
+                             .filter(btn => btn && btn.classList.contains('selected')) // Added null check for safety
+                             .map(btn => btn.dataset.topic);
+          console.log("Updated Selected Topics:", selectedTopics);
     }
 
 
-    // --- Event Listeners ---
+    // --- Event Listeners --- (With null checks)
 
     // Start button
     if (startButton) {
@@ -828,12 +720,12 @@ document.addEventListener('DOMContentLoaded', () => {
         console.error("Next button (#next-btn) not found!");
     }
 
-     // Submit button (though primarily triggered by handleOptionSelect/input)
+     // Submit button
      if (submitButton) {
-        submitButton.addEventListener('click', handleSubmit);
-    } else {
-        console.error("Submit button (#submit-btn) not found!");
-    }
+         submitButton.addEventListener('click', handleSubmit);
+     } else {
+         console.error("Submit button (#submit-btn) not found!");
+     }
 
     // Restart button
     if (restartButton) {
@@ -844,167 +736,78 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Topic selection buttons
     topicButtons.forEach(button => {
-        button.addEventListener('click', () => {
-           if (!button) {
-               console.error("Topic button is null in click handler!");
-               return;
-           }
-           const topic = button.dataset.topic;
-           const isSelected = button.classList.contains('selected');
-            const allButton = document.querySelector('.topic-btn[data-topic="all"]');
-            const specificTopicButtons = document.querySelectorAll('.topic-btn:not([data-topic="all"])');
+        if (button) { // Check if the button element exists
+            button.addEventListener('click', () => {
+                // 'button' variable is valid within this handler's scope
+                const topic = button.dataset.topic;
+                const isSelected = button.classList.contains('selected');
+                const allButton = document.querySelector('.topic-btn[data-topic="all"]');
+                const specificTopicButtons = document.querySelectorAll('.topic-btn:not([data-topic="all"])');
 
-            if (topic === 'all') {
-                if (!isSelected) {
-                    // Selecting 'all'
-                    button.classList.add('selected');
-                    specificTopicButtons.forEach(btn => btn.classList.add('selected'));
-                } else {
-                    // Deselecting 'all'
-                    button.classList.remove('selected');
-                    specificTopicButtons.forEach(btn => btn.classList.remove('selected'));
-                }
-            } else {
-                // Clicked a specific topic button
-                button.classList.toggle('selected'); // Toggle this specific button
-
-                // Check if all specific topics are now selected
-                const allSpecificSelected = Array.from(specificTopicButtons).every(btn => btn.classList.contains('selected'));
-                if (allButton) {
-                    if (allSpecificSelected) {
-                         allButton.classList.add('selected'); // Select 'all' visually
+                if (topic === 'all') {
+                    if (!isSelected) {
+                        // Selecting 'all'
+                        button.classList.add('selected');
+                        specificTopicButtons.forEach(btn => {
+                            if(btn) btn.classList.add('selected'); // Check btn exists
+                        });
                     } else {
-                         allButton.classList.remove('selected'); // Deselect 'all' if any specific is deselected
+                        // Deselecting 'all'
+                        button.classList.remove('selected');
+                        specificTopicButtons.forEach(btn => {
+                            if(btn) btn.classList.remove('selected'); // Check btn exists
+                        });
+                    }
+                } else {
+                    // Clicked a specific topic button
+                    button.classList.toggle('selected'); // Toggle this specific button
+
+                    // Check if all specific topics are now selected
+                    // Ensure 'every' checks that btn exists before accessing classList
+                    const allSpecificSelected = Array.from(specificTopicButtons).every(btn => btn && btn.classList.contains('selected'));
+                    if (allButton) { // Check if 'all' button exists
+                        if (allSpecificSelected) {
+                            allButton.classList.add('selected'); // Select 'all' visually
+                        } else {
+                            allButton.classList.remove('selected'); // Deselect 'all' if any specific is deselected
+                        }
                     }
                 }
-            }
-            // Update the internal selectedTopics array after any button click
-            updateSelectedTopicsArray();
-        });
+                // Update the internal selectedTopics array after any button click
+                updateSelectedTopicsArray();
+            });
+        } else {
+             console.error("A topic button element was null during listener setup.");
+        }
     });
 
     // --- Initial Setup ---
-    // Ensure 'All Topics' is selected by default visually and logically
-    const allButtonInitial = document.querySelector('.topic-btn[data-topic="all"]');
-    if (allButtonInitial) {
-        allButtonInitial.classList.add('selected');
-        topicButtons.forEach(btn => {
-            if(btn !== allButtonInitial) btn.classList.add('selected');
-        });
-        updateSelectedTopicsArray(); // Initialize with all topics
+    function initializeGameUI() {
+        // Ensure 'All Topics' is selected by default visually and logically
+        const allButtonInitial = document.querySelector('.topic-btn[data-topic="all"]');
+        if (allButtonInitial) {
+            allButtonInitial.classList.add('selected');
+            // Also select all specific buttons initially if 'All' means all
+            topicButtons.forEach(btn => {
+                 if (btn && btn !== allButtonInitial) btn.classList.add('selected');
+            });
+            updateSelectedTopicsArray(); // Initialize with all topics selected
+        } else {
+            // If no 'All' button, maybe select none or the first one? Or just update array.
+            updateSelectedTopicsArray();
+        }
+
+        // Hide game/results areas initially
+        if (gameScreen) gameScreen.classList.add('hidden');
+        if (finalResultsElement) finalResultsElement.classList.add('hidden');
+        if (nextButton) nextButton.classList.add('hidden'); // Ensure next is hidden initially
+        if (submitButton) submitButton.disabled = true; // Start with submit disabled
+
+        // Show topic selection
+        if (topicSelectionScreen) topicSelectionScreen.classList.remove('hidden');
     }
-    // Hide question/results areas initially
-    if (questionContainer) questionContainer.classList.add('hidden');
-    finalResultsElement.classList.add('hidden');
-    nextButton.classList.add('hidden'); // Ensure next is hidden initially
+
+    // Run initial setup
+    initializeGameUI();
 
 }); // End of DOMContentLoaded listener
-  document.addEventListener('DOMContentLoaded', () => {
-      // ... (rest of your code) ...
-  
-      // --- Helper to update selectedTopics array based on button classes ---
-      function updateSelectedTopicsArray() {
-          const specificTopicButtons = document.querySelectorAll('.topic-btn:not([data-topic="all"])');
-          selectedTopics = Array.from(specificTopicButtons)
-              .filter(btn => btn.classList.contains('selected'))
-              .map(btn => btn.dataset.topic);
-          console.log("Updated Selected Topics:", selectedTopics);
-      }
-  
-  
-      // --- Event Listeners ---
-  
-      // Start button
-      if (startButton) {
-          startButton.addEventListener('click', startGame);
-      } else {
-          console.error("Start button (#start-btn) not found!");
-      }
-  
-      // Next button
-      if (nextButton) {
-          nextButton.addEventListener('click', handleNext);
-      } else {
-          console.error("Next button (#next-btn) not found!");
-      }
-  
-      // Submit button (though primarily triggered by handleOptionSelect/input)
-      if (submitButton) {
-          submitButton.addEventListener('click', handleSubmit);
-      } else {
-          console.error("Submit button (#submit-btn) not found!");
-      }
-  
-      // Restart button
-      if (restartButton) {
-          restartButton.addEventListener('click', restartGame);
-      } else {
-          console.error("Restart button (#restart-btn) not found!");
-      }
-  
-      // Topic selection buttons
-      topicButtons.forEach(button => {
-          if (!button) {
-              console.error("A topic button is null!");
-              return; // Skip this iteration if the button is null
-          }
-          button.addEventListener('click', () => {
-              if (!button) {
-                  console.error("Topic button is null in click handler!");
-                  return;
-              }
-              const topic = button.dataset.topic;
-              const isSelected = button.classList.contains('selected');
-              const allButton = document.querySelector('.topic-btn[data-topic="all"]');
-              const specificTopicButtons = document.querySelectorAll('.topic-btn:not([data-topic="all"])');
-  
-              if (topic === 'all') {
-                  if (!isSelected) {
-                      // Selecting 'all'
-                      button.classList.add('selected');
-                      specificTopicButtons.forEach(btn => {
-                          if(btn) btn.classList.add('selected');
-                      });
-                  } else {
-                      // Deselecting 'all'
-                      button.classList.remove('selected');
-                      specificTopicButtons.forEach(btn => {
-                          if(btn) btn.classList.remove('selected');
-                      });
-                  }
-              } else {
-                  // Clicked a specific topic button
-                  button.classList.toggle('selected'); // Toggle this specific button
-  
-                  // Check if all specific topics are now selected
-                  const allSpecificSelected = Array.from(specificTopicButtons).every(btn => btn && btn.classList.contains('selected'));
-                  if (allButton) {
-                      if (allSpecificSelected) {
-                          allButton.classList.add('selected'); // Select 'all' visually
-                      } else {
-                          allButton.classList.remove('selected'); // Deselect 'all' if any specific is deselected
-                      }
-                  }
-              }
-              // Update the internal selectedTopics array after any button click
-              updateSelectedTopicsArray();
-          });
-      });
-  
-      // --- Initial Setup ---
-      // Ensure 'All Topics' is selected by default visually and logically
-      const allButtonInitial = document.querySelector('.topic-btn[data-topic="all"]');
-      if (allButtonInitial) {
-          allButtonInitial.classList.add('selected');
-          topicButtons.forEach(btn => {
-              if (btn && btn !== allButtonInitial) btn.classList.add('selected');
-          });
-          updateSelectedTopicsArray(); // Initialize with all topics
-      }
-      // Hide question/results areas initially
-      if (questionContainer) questionContainer.classList.add('hidden');
-      finalResultsElement.classList.add('hidden');
-      nextButton.classList.add('hidden'); // Ensure next is hidden initially
-  
-  }); // End of DOMContentLoaded listener
-  
