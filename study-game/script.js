@@ -1,8 +1,6 @@
 // script.js
 // Main application logic for the STM32 study game.
 
-// Import the questions data from the separate file
-import { questions } from './questions.js'; // Ensure the path is correct
 
 document.addEventListener('DOMContentLoaded', () => {
     // --- DOM Element References ---
