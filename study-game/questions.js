@@ -3,11 +3,21 @@ export const questions = [
         topic: "RCC",
         question: "Which register must be modified to enable the clock for the GPIOB peripheral?",
         resources: [
-            "<b>RCC AHBENR Register:</b> Controls clocks for AHB bus peripherals.",
-            "Bit 17: <code>IOPAEN</code> - I/O port A clock enable",
-            "Bit 18: <code>IOPBEN</code> - I/O port B clock enable",
-            "Bit 19: <code>IOPCEN</code> - I/O port C clock enable",
-            "To enable a clock, write '1' to the corresponding bit."
+            "The RCC_AHBENR register controls the clock gating for peripherals connected to the AHB bus. This register has individual bits that enable or disable the clock for each AHB peripheral, including the GPIO ports.",
+            "•",
+            "Specifically, bit 18 of the RCC_AHBENR register (IOPBEN) is the I/O port B clock enable bit. To enable the clock for GPIOB, you need to set this bit to '1'.",
+            "•",
+            "Similarly, bit 17 (IOPAEN) enables the clock for Port A, and bit 19 (IOPCEN) enables the clock for Port C. Ports D, E, and F also have corresponding enable bits in the RCC_AHBENR.",
+            "•",
+            "It's crucial to understand that by default, every subsystem in a microcontroller, including GPIO, is disabled to reduce power consumption. Therefore, before you can configure or use any GPIO port, you must first enable its clock by setting the corresponding bit in the RCC_AHBENR register.",
+            "•",
+            "The sources also caution that when modifying the RCC_AHBENR, you should use bitwise OR operations (|=) to set specific bits without affecting the status of other important bits, such as the SRAM enable bit (SRAMEN). Directly writing a value to the entire register could unintentionally disable other essential peripherals' clocks. An example of correctly enabling the clock for GPIOC is given as RCC->AHBENR |= RCC_AHBENR_GPIOCEN;. This uses the symbolic constant for the GPIOC enable bit, which corresponds to setting bit 19.",
+            "In summary, enabling the clock for GPIOB is a fundamental first step in configuring and using the pins of Port B for input or output operations, and this is achieved by setting the IOPBEN bit (bit 18) in the RCC_AHBENR register.",
+            // "<b>RCC AHBENR Register:</b> Controls clocks for AHB bus peripherals.",
+            // "Bit 17: <code>IOPAEN</code> - I/O port A clock enable",
+            // "Bit 18: <code>IOPBEN</code> - I/O port B clock enable",
+            // "Bit 19: <code>IOPCEN</code> - I/O port C clock enable",
+            // "To enable a clock, write '1' to the corresponding bit."
         ],
         options: [
             "RCC->APB1ENR",
@@ -188,7 +198,15 @@ export const questions = [
         topic: "DMA",
         question: "You are setting up DMA (e.g., Channel 5) to transfer 8 half-words (16-bit values) from the `msg` array to `GPIOB->ODR`. What value should `DMA1_Channel5->CNDTR` be initialized to?",
         resources: [
-             "<b>DMA_CNDTR Register (Channel Number of Data To Transfer Register):</b>",
+            "You are correct that when setting up DMA Channel 5 to transfer 8 half-words (16-bit values) from the msg array to GPIOB->ODR, the DMA1_Channel5->CNDTR register should be initialized to 8.",
+            "Here's a more detailed explanation based on the sources:",
+            "•",
+            "The DMA_CNDTR Register (Channel Number of Data To Transfer Register) specifies the total number of data units to be transferred. It's important to understand that this register counts the number of items, not the size of each item in bytes or bits.",
+            "•",
+            "In your scenario, you want to transfer 8 half-words from the msg array. Therefore, the number of data units to be transferred is 8.",
+            "•",
+            "The counter in the DMA_CNDTR register will decrement after each transfer. The DMA transfer will stop when this counter reaches 0, unless the DMA channel is configured for circular mode.",
+            "•",
              "Specifies the total number of data units to be transferred.",
              "The counter decrements after each transfer.",
              "Transfer stops when it reaches 0 (unless in circular mode)."

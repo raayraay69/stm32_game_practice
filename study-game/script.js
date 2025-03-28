@@ -6,10 +6,9 @@ import { questions } from './questions.js'; // Ensure the path is correct
 
 document.addEventListener('DOMContentLoaded', () => {
     // --- DOM Element References ---
-    // Ensure these IDs match your HTML file exactly!
     const questionTextElement = document.getElementById('question-text');
     const referenceContentElement = document.getElementById('reference-content');
-    const answerOptionsElement = document.getElementById('input-area'); // Make sure HTML has id="input-area"
+    const answerOptionsElement = document.getElementById('input-area');
     const submitButton = document.getElementById('submit-btn');
     const nextButton = document.getElementById('next-btn');
     const feedbackElement = document.getElementById('feedback-area');
@@ -23,110 +22,95 @@ document.addEventListener('DOMContentLoaded', () => {
     const topicButtons = document.querySelectorAll('.topic-btn');
     const topicSelectionScreen = document.getElementById('topic-selection-screen');
     const gameScreen = document.getElementById('game-screen');
-    // Using class selector for questionContainer, ensure it exists if needed elsewhere.
-    const questionContainer = document.querySelector('.question-container');
-
-
-    // --- NO questions array defined here anymore ---
-
+    const questionContainer = document.querySelector('.question-container'); // Used implicitly? Keep if needed.
 
     // --- Global variables ---
     let currentQuestionIndex = 0;
     let score = 0;
-    let selectedAnswerIndex = null; // Track which button is clicked
+    let selectedAnswerIndex = null;
     let questionsToUse = [];
-    let selectedTopics = []; // Holds the actual topic strings for filtering
+    let selectedTopics = [];
 
     // --- Functions ---
 
     function startGame() {
-        // Filter questions based on selected topics if any *specific* topics are selected
         const allButton = document.querySelector('.topic-btn[data-topic="all"]');
-        // Ensure allButton exists before checking its classList
         const useAllTopics = allButton && allButton.classList.contains('selected');
 
-        // Use the imported 'questions' array here
         if (!useAllTopics && selectedTopics.length > 0) {
-             questionsToUse = questions.filter(q => selectedTopics.includes(q.topic));
+            questionsToUse = questions.filter(q => selectedTopics.includes(q.topic));
         } else {
-             // Use all questions if 'All Topics' is selected or no specific topics are chosen
-             questionsToUse = [...questions]; // Use spread to copy from imported array
+            questionsToUse = [...questions];
         }
 
-        // Ensure there are questions to ask for the selected topics
         if (questionsToUse.length === 0) {
             alert("Please select at least one topic with available questions.");
-            return; // Don't start the game
+            return;
         }
 
-        // Reset game state
         currentQuestionIndex = 0;
         score = 0;
         if (finalResultsElement) finalResultsElement.classList.add('hidden');
-        if (gameScreen) gameScreen.classList.remove('hidden'); // Show game screen
+        if (topicSelectionScreen) topicSelectionScreen.classList.add('hidden');
+        if (gameScreen) gameScreen.classList.remove('hidden');
 
-        // Update score display (check if elements exist)
         if (scoreElement) scoreElement.textContent = score;
         if (totalQuestionsElement) totalQuestionsElement.textContent = questionsToUse.length;
 
-        // Shuffle questions for variety
         shuffleArray(questionsToUse);
-
-        // Hide topic selection and show question interface
-        if (topicSelectionScreen) topicSelectionScreen.classList.add('hidden');
-
-        // Load the first question
-        loadQuestion(); // Pass questionsToUse implicitly via global scope
+        loadQuestion();
     }
 
-    // Fisher-Yates shuffle algorithm
     function shuffleArray(array) {
         for (let i = array.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
-            [array[i], array[j]] = [array[j], array[i]]; // Swap elements
+            [array[i], array[j]] = [array[j], array[i]];
         }
     }
 
     function loadQuestion() {
-        // Reset state from previous question
+        // Reset UI elements
         if (feedbackElement) {
-            feedbackElement.classList.add('hidden'); // Use classList for consistency
-            feedbackElement.classList.remove('feedback-correct', 'feedback-incorrect'); // Clear state classes
+            feedbackElement.classList.add('hidden');
+            feedbackElement.classList.remove('feedback-correct', 'feedback-incorrect');
             feedbackElement.innerHTML = '';
         }
         if (submitButton) {
             submitButton.classList.remove('hidden');
-            submitButton.disabled = true; // Disable until an answer is selected
+            submitButton.disabled = true;
         }
         if (nextButton) {
             nextButton.classList.add('hidden');
         }
         selectedAnswerIndex = null;
 
-        // Check if questionsToUse is populated and index is valid
         if (!questionsToUse || questionsToUse.length === 0 || currentQuestionIndex >= questionsToUse.length) {
             console.error("Error loading question: questionsToUse is invalid or index out of bounds.");
-            showFinalResults(); // Go to results if questions run out or error
+            showFinalResults();
             return;
         }
 
         const currentQuestion = questionsToUse[currentQuestionIndex];
 
-        // Display Question (check element exists)
+        // Display Question Text
         if (questionTextElement) {
-            questionTextElement.textContent = `(${currentQuestion.topic}) ${currentQuestion.question}`;
+            questionTextElement.innerHTML = ''; // Clear previous
+            const topicTag = document.createElement('span');
+            topicTag.classList.add('topic-tag');
+            topicTag.textContent = currentQuestion.topic;
+            questionTextElement.appendChild(topicTag);
+            questionTextElement.appendChild(document.createTextNode(` ${currentQuestion.question}`));
         } else {
             console.error("Question text element not found!");
         }
 
-
-        // Display Reference Material (check element exists)
+        // Display Reference Material
         if (referenceContentElement) {
-            referenceContentElement.innerHTML = ''; // Clear previous references
+            referenceContentElement.innerHTML = '';
             if (currentQuestion.resources) {
                 currentQuestion.resources.forEach(res => {
                     const p = document.createElement('p');
-                    p.innerHTML = res; // Use innerHTML to parse <code> tags etc.
+                    p.innerHTML = res; // Allows <b>, <code> etc.
                     referenceContentElement.appendChild(p);
                 });
             }
@@ -134,92 +118,62 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error("Reference content element not found!");
         }
 
-
-        // Display Answer Options based on question type (check element exists)
+        // Display Answer Options
         if (answerOptionsElement) {
-            answerOptionsElement.innerHTML = ''; // Clear previous options
-
+            answerOptionsElement.innerHTML = '';
             if (currentQuestion.type === 'fill-blank') {
-                // Create a text input for fill-in-the-blank
                 const inputField = document.createElement('input');
                 inputField.type = 'text';
                 inputField.id = 'fill-blank-input';
                 inputField.placeholder = 'Type your answer here...';
-                inputField.classList.add('fill-blank-input');
-
+                inputField.classList.add('fill-blank-input'); // Use class from CSS
                 inputField.addEventListener('input', () => {
-                    if (submitButton) { // Check submitButton exists
-                         submitButton.disabled = inputField.value.trim() === '';
-                    }
+                    if (submitButton) submitButton.disabled = inputField.value.trim() === '';
                 });
-
                 inputField.addEventListener('keyup', (event) => {
-                    // Check submitButton exists and is not disabled
-                    if (event.key === 'Enter' && submitButton && !submitButton.disabled) {
-                        handleSubmit();
-                    }
+                    if (event.key === 'Enter' && submitButton && !submitButton.disabled) handleSubmit();
                 });
-
                 answerOptionsElement.appendChild(inputField);
-                // Focus the input field automatically
-                 setTimeout(() => inputField.focus(), 0);
+                setTimeout(() => inputField.focus(), 0);
+            } else if (currentQuestion.options) {
+                currentQuestion.options.forEach((option, index) => {
+                    const button = document.createElement('button');
+                    button.innerHTML = option; // Allows <code>
+                    button.dataset.index = index;
+                    button.classList.add('option-btn');
+                    button.addEventListener('click', () => handleOptionSelect(button, index));
+                    answerOptionsElement.appendChild(button);
+                });
             } else {
-                // Default to multiple choice
-                if (currentQuestion.options) { // Check if options exist
-                    currentQuestion.options.forEach((option, index) => {
-                        const button = document.createElement('button');
-                        button.innerHTML = option; // Use innerHTML for code formatting
-                        button.dataset.index = index; // Store the index
-                        button.classList.add('option-btn');
-                        button.addEventListener('click', () => handleOptionSelect(button, index));
-                        answerOptionsElement.appendChild(button);
-                    });
-                } else {
-                     console.error("Question is missing 'options' array:", currentQuestion);
-                }
+                console.error("Question is missing 'options' or is not 'fill-blank':", currentQuestion);
             }
         } else {
-             console.error("Answer options element (#input-area) not found!");
+            console.error("Answer options element (#input-area) not found!");
         }
 
-
-        // Set up simulation preview if available
-        // Clear previous simulation first
-        let simContainer = document.getElementById('simulation'); // Target existing #simulation div
+        // Clear and hide simulation area initially
+        let simContainer = document.getElementById('simulation');
         if (simContainer) {
-            simContainer.innerHTML = ''; // Clear previous simulation
-            simContainer.classList.add('hidden'); // Hide until needed
-        }
-        if (currentQuestion.simulation) {
-            // Simulation display logic might go here or in handleSubmit/setupSimulationPreview
+            simContainer.innerHTML = '';
+            simContainer.classList.add('hidden');
+             // No need to call setupSimulationPreview here, call it in handleSubmit
         }
     }
 
     function handleOptionSelect(button, index) {
-        // Ensure answerOptionsElement exists before querying it
-         if (!answerOptionsElement) return;
-
-        // Remove 'selected' class from previously selected button (if any)
+        if (!answerOptionsElement) return;
         const previouslySelected = answerOptionsElement.querySelector('.option-btn.selected');
-        if (previouslySelected) {
-            previouslySelected.classList.remove('selected');
-        }
-
-        // Add 'selected' class to the clicked button
+        if (previouslySelected) previouslySelected.classList.remove('selected');
         button.classList.add('selected');
         selectedAnswerIndex = index;
-
-        // Enable submit button (check it exists)
         if (submitButton) submitButton.disabled = false;
     }
 
     function handleSubmit() {
-         // Ensure essential elements exist
         if (!feedbackElement || !submitButton || !nextButton || !answerOptionsElement) {
             console.error("Cannot handle submit - core elements missing.");
             return;
         }
-         // Ensure question data is valid
         if (!questionsToUse || currentQuestionIndex >= questionsToUse.length) {
             console.error("Cannot handle submit - invalid question state.");
             showFinalResults();
@@ -229,86 +183,74 @@ document.addEventListener('DOMContentLoaded', () => {
         const currentQuestion = questionsToUse[currentQuestionIndex];
         let isCorrect = false;
 
-        submitButton.classList.add('hidden'); // Hide submit button
-        nextButton.classList.remove('hidden'); // Show next button
+        submitButton.classList.add('hidden');
+        nextButton.classList.remove('hidden');
 
+        // Determine correctness
         if (currentQuestion.type === 'fill-blank') {
             const inputField = document.getElementById('fill-blank-input');
-            if (inputField) { // Check if input field exists
+            if (inputField) {
                 const userAnswer = inputField.value.trim();
-                // Case-insensitive comparison
                 isCorrect = userAnswer.toLowerCase() === (currentQuestion.correctAnswer || '').toLowerCase();
-                inputField.disabled = true; // Disable input after submission
-                feedbackElement.innerHTML = `Your answer: ${userAnswer}<br>`; // Show user's answer
+                inputField.disabled = true;
+                feedbackElement.innerHTML = `Your answer: <span class="sim-value color-value">${userAnswer}</span><br>`; // Show user's answer styled
             } else {
                 console.error("Fill-blank input field not found during submit.");
                 feedbackElement.innerHTML = 'Error processing answer.<br>';
             }
-
-        } else {
-            // Multiple choice
+        } else { // Multiple choice
+            const buttons = answerOptionsElement.querySelectorAll('.option-btn');
             if (selectedAnswerIndex === null) {
-                 console.warn("Submit called with no answer selected.");
-                 // Re-show submit, hide next if needed? Or just proceed as incorrect?
-                 // For simplicity, treat as incorrect or just return
-                 // Let's treat as incorrect for now.
-                 feedbackElement.innerHTML = 'No answer selected.<br>';
-                 isCorrect = false; // Ensure isCorrect is false
-                 // Disable buttons anyway
-                 answerOptionsElement.querySelectorAll('.option-btn').forEach(btn => {
-                    btn.disabled = true;
-                 });
-
+                feedbackElement.innerHTML = 'No answer selected.<br>';
+                isCorrect = false;
+                buttons.forEach(btn => btn.disabled = true); // Disable anyway
             } else {
                 isCorrect = selectedAnswerIndex === currentQuestion.correctIndex;
-
-                 // Disable all option buttons after submission
-                answerOptionsElement.querySelectorAll('.option-btn').forEach(btn => {
+                buttons.forEach(btn => {
                     btn.disabled = true;
-                    // Highlight correct and incorrect answers
                     const btnIndex = parseInt(btn.dataset.index);
                     if (btnIndex === currentQuestion.correctIndex) {
                         btn.classList.add('correct');
                     } else if (btnIndex === selectedAnswerIndex) {
-                        // Only add 'incorrect' if it wasn't the correct one already highlighted
+                        // Add 'incorrect' only if it wasn't the correct one
                         if (!btn.classList.contains('correct')) {
-                             btn.classList.add('incorrect');
+                            btn.classList.add('incorrect');
                         }
                     }
                 });
             }
         }
 
-
-        // Display Feedback
+        // Display Feedback Text
         if (isCorrect) {
             score++;
             feedbackElement.innerHTML += `<b>Correct!</b> ${currentQuestion.explanation || ''}`;
             feedbackElement.classList.remove('hidden', 'feedback-incorrect');
             feedbackElement.classList.add('feedback-correct');
         } else {
-            // Append to existing message (e.g., "No answer selected" or "Your answer: ...")
             feedbackElement.innerHTML += `<b>Incorrect.</b> ${currentQuestion.explanation || ''}`;
-             if (currentQuestion.type !== 'fill-blank') {
-                  // Check options exist before accessing
-                 if(currentQuestion.options && currentQuestion.correctIndex < currentQuestion.options.length){
-                    feedbackElement.innerHTML += `<br>Correct answer was: ${currentQuestion.options[currentQuestion.correctIndex]}`;
-                 }
-             } else {
-                 feedbackElement.innerHTML += `<br>Correct answer was: ${currentQuestion.correctAnswer || 'N/A'}`;
-             }
+            // Show correct answer if provided
+            let correctAnswerText = '';
+            if (currentQuestion.type === 'fill-blank') {
+                 correctAnswerText = currentQuestion.correctAnswer || 'N/A';
+            } else if (currentQuestion.options && currentQuestion.correctIndex < currentQuestion.options.length){
+                 correctAnswerText = currentQuestion.options[currentQuestion.correctIndex];
+            }
+            if (correctAnswerText) {
+                 // Use innerHTML for potential <code> tags in correct answer
+                 feedbackElement.innerHTML += `<br><span>Correct answer was: ${correctAnswerText}</span>`;
+            }
             feedbackElement.classList.remove('hidden', 'feedback-correct');
             feedbackElement.classList.add('feedback-incorrect');
         }
 
-        // Update score display (check element exists)
         if (scoreElement) scoreElement.textContent = score;
 
-        // Show simulation if available
+        // --- Display Simulation AFTER checking answer ---
         if (currentQuestion.simulation) {
-            setupSimulationPreview(currentQuestion.simulation);
-             let simContainer = document.getElementById('simulation'); // Target existing div
-             if(simContainer) simContainer.classList.remove('hidden');
+            setupSimulationPreview(currentQuestion.simulation); // Call the updated function
+            let simContainer = document.getElementById('simulation');
+            if(simContainer) simContainer.classList.remove('hidden');
         }
     }
 
@@ -322,122 +264,229 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function showFinalResults() {
-        // Check elements exist before manipulating
-        if (gameScreen) gameScreen.classList.add('hidden'); // Hide game screen
-        if (finalResultsElement) finalResultsElement.classList.remove('hidden'); // Show final results
+        if (gameScreen) gameScreen.classList.add('hidden');
+        if (finalResultsElement) finalResultsElement.classList.remove('hidden');
         if (finalScoreElement) finalScoreElement.textContent = score;
-        // Use the imported 'questions' length as a fallback if questionsToUse is empty
         if (finalTotalElement) finalTotalElement.textContent = questionsToUse.length > 0 ? questionsToUse.length : questions.length;
+
+        // --- TODO: Add Results Breakdown Logic Here ---
+        // You would iterate through questionsToUse, check correctness (needs storing results per question),
+        // group by topic, calculate scores, and generate the progress bar HTML for #topic-breakdown.
+        const topicBreakdownElement = document.getElementById('topic-breakdown');
+        if (topicBreakdownElement) {
+             topicBreakdownElement.innerHTML = '<h3>Topic Performance</h3><ul><li>(Breakdown coming soon)</li></ul>'; // Placeholder
+        }
+        // ---
     }
 
     function restartGame() {
-        // Reset state and show topic selection again
         if (finalResultsElement) finalResultsElement.classList.add('hidden');
         if (topicSelectionScreen) topicSelectionScreen.classList.remove('hidden');
         if (gameScreen) gameScreen.classList.add('hidden');
-
-        // Optional: Reset topic selections visually to 'All' (uncomment if desired)
-        /*
-        const allButton = document.querySelector('.topic-btn[data-topic="all"]');
-        if (allButton) {
-            allButton.classList.add('selected');
-            topicButtons.forEach(btn => {
-                if (btn && btn !== allButton) btn.classList.add('selected');
-            });
-            updateSelectedTopicsArray(); // Update internal array
-        }
-        */
-
         // Reset score display potentially
         if (scoreElement) scoreElement.textContent = 0;
-        // Use imported 'questions' length for total possible
-        if (totalQuestionsElement) totalQuestionsElement.textContent = questions.length;
+        // Use imported 'questions' length for total possible if needed, or keep 0 until start
+        // if (totalQuestionsElement) totalQuestionsElement.textContent = questions.length;
     }
 
-    // --- Simulation Preview Functions --- (Updated Placeholder) ---
+    // --- Simulation Preview Function (ADHD-Friendly Rendering) ---
     function setupSimulationPreview(simulation) {
-        // Target the existing div in the HTML
         let simContainer = document.getElementById('simulation');
         if (!simContainer) {
-             console.error("Simulation container (#simulation) not found!");
-             return; // Exit if target doesn't exist
+            console.error("Simulation container (#simulation) not found!");
+            return;
         }
-        // Add a class for styling if needed, remove if not
-        simContainer.classList.add('simulation-preview'); // Apply styling class
-
-        simContainer.innerHTML = ''; // Clear previous content
-        simContainer.classList.remove('hidden'); // Make sure it's visible
-
-        // Optional: Add back the H3 title if you want it inside #simulation dynamically
-        // (Your HTML already has one outside #simulation, which might be better)
-        // const header = document.createElement('h3');
-        // header.textContent = 'Hardware Simulation';
-        // simContainer.appendChild(header);
+        simContainer.innerHTML = ''; // Clear previous
+        simContainer.classList.remove('hidden'); // Ensure visible
 
         const simContent = document.createElement('div');
-        simContent.classList.add('sim-content');
+        simContent.classList.add('sim-content-box'); // Use class from CSS
 
-        // Basic display for now, expand later
-        const pre = document.createElement('pre');
-        pre.textContent = JSON.stringify(simulation, null, 2); // Pretty print JSON
-        simContent.appendChild(pre);
+        let titleText = simulation.type || 'Simulation Details'; // Default title
 
-        // Append the content to the simulation container
+        // --- Render based on available simulation data ---
+
+        if (simulation.steps) { // Handle types with 'steps' array
+            titleText = simulation.description || titleText; // Use description as title if available
+             if (simulation.type === "bit-manipulation") titleText = "Register Bit Manipulation";
+             else if (simulation.type === "adc-clock-setup") titleText = "ADC Clock Setup Sequence";
+             else if (simulation.type === "adc-conversion") titleText = "ADC Conversion Sequence";
+             else if (simulation.type === "spi-config") titleText = "SPI Configuration Sequence";
+             else if (simulation.type === "interrupt-setup") titleText = "Interrupt Setup Sequence";
+             else if (simulation.type === "dac-output") titleText = "DAC Output Setup";
+
+
+            const stepsList = document.createElement('ol'); // Use ordered list for steps
+            stepsList.classList.add('sim-steps-list');
+            simulation.steps.forEach(step => {
+                const stepItem = document.createElement('li');
+                let stepHTML = '';
+                if (step.function) {
+                     stepHTML += `Call <span class="color-value"><code>${step.function}</code></span>`;
+                } else if (step.register) {
+                     stepHTML += `Register: <b class="color-register">${step.register}</b> | `;
+                     stepHTML += `Operation: <span class="color-value">${step.operation || 'N/A'}</span> | `;
+                     if (step.bits) stepHTML += `Bits: <span class="color-bit-num">${step.bits}</span> | `;
+                     if (step.value) stepHTML += `Value: <span class="color-value">${step.value}</span> | `;
+                     if (step.mask) stepHTML += `Mask: <span class="color-value">${step.mask}</span> | `;
+                }
+                 stepHTML += `<span class="sim-desc color-desc">${step.description || ''}</span>`;
+                stepItem.innerHTML = stepHTML;
+                stepsList.appendChild(stepItem);
+            });
+             simContent.appendChild(stepsList);
+
+        } else if (simulation.type === "register-view") {
+            titleText = `Register View: ${simulation.register}`;
+             simContent.innerHTML += `
+                <div>Register: <b class="color-register">${simulation.register}</b></div>
+                <div>Value: <span class="sim-value color-value">${simulation.value || 'N/A'}</span></div>
+            `;
+            if (simulation.bitFields && Array.isArray(simulation.bitFields)) {
+                 const bitsList = document.createElement('ul');
+                 bitsList.classList.add('sim-bits-list');
+                 simulation.bitFields.forEach(field => {
+                    const bitItem = document.createElement('li');
+                    bitItem.innerHTML = `
+                         <span class="sim-bit">
+                            Bits <span class="color-bit-num">${field.bits}</span>
+                            (<span class="color-bit-name">${field.name}</span>):
+                        </span>
+                         <span class="sim-desc color-desc">${field.description}</span>`;
+                    bitsList.appendChild(bitItem);
+                 });
+                 simContent.appendChild(bitsList);
+            }
+            // Add highlighting logic if 'bitHighlight' is present (requires more complex rendering)
+            if (simulation.bitHighlight !== undefined) {
+                 simContent.innerHTML += `<p class="sim-desc color-desc">(Highlighting Bit: ${simulation.bitHighlight})</p>`; // Simple indication for now
+            }
+
+        } else if (simulation.type === "pin-config") {
+             titleText = `Pin Configuration: ${simulation.pin}`;
+             simContent.innerHTML += `
+                <div>Pin: <b>${simulation.pin}</b></div>
+                <div>Mode: <span class="color-value">${simulation.mode || 'N/A'}</span></div>
+                <div>Register: <b class="color-register">${simulation.register}</b></div>
+                <div>Bit Field: <span class="color-bit-num">${simulation.bitField || 'N/A'}</span></div>
+                <div>Resulting Reg Value (approx): <span class="color-value">${simulation.value || 'N/A'}</span></div>
+            `;
+
+        } else if (simulation.type === "timer-calculation" || simulation.type === "timer-clock") {
+            titleText = "Timer Calculation";
+             simContent.innerHTML += `
+                <div>System Clock: <span class="color-value">${simulation.systemClock} Hz</span></div>
+                ${simulation.psc !== undefined ? `<div>Prescaler (PSC): <span class="color-value">${simulation.psc}</span></div>` : ''}
+                ${simulation.prescaler !== undefined ? `<div>Prescaler (PSC): <span class="color-value">${simulation.prescaler}</span></div>` : ''}
+                ${simulation.targetFrequency ? `<div>Target Freq: <span class="color-value">${simulation.targetFrequency} Hz</span></div>` : ''}
+                ${simulation.formula ? `<div class="sim-formula">Formula: <code>${simulation.formula}</code></div>` : ''}
+                ${simulation.result ? `<div>Resulting Timer Clock: <span class="color-value">${simulation.result} Hz</span></div>` : ''}
+            `;
+        } else if (simulation.type === "timer-pwm-setup") {
+             titleText = `PWM Setup: Channel ${simulation.channel}`;
+             simContent.innerHTML += `
+                 <div>Register: <b class="color-register">${simulation.register}</b></div>
+                 <div>Bits (OC${simulation.channel}M): <span class="color-bit-num">${simulation.bits}</span></div>
+                 <div>Value for PWM Mode 1: <span class="color-value">${simulation.value}</span> (Binary 110)</div>
+             `;
+        } else if (simulation.type === "dma-config") {
+             titleText = "DMA Configuration";
+              simContent.innerHTML += `
+                 <div>Register: <b class="color-register">${simulation.register}</b></div>
+                 <div>Bits: <span class="color-bit-num">${simulation.bits}</span></div>
+                 <div>Value: <span class="color-value">${simulation.value}</span></div>
+                 <div class="sim-desc color-desc">${simulation.description || ''}</div>
+             `;
+        } else if (simulation.type === "dma-transfer") {
+             titleText = "DMA Transfer Setup";
+             simContent.innerHTML += `
+                 <div>Register: <b class="color-register">${simulation.register}</b></div>
+                 <div>Value (Count): <span class="color-value">${simulation.value}</span></div>
+             `;
+             if (simulation.transfer) {
+                 simContent.innerHTML += `
+                    <div class="sim-transfer-details">
+                        Transferring <b>${simulation.transfer.count}</b> items
+                        (Size: ${simulation.transfer.dataSize})<br>
+                        From: <span class="color-value">${simulation.transfer.source}</span> <br>
+                        To: <span class="color-register">${simulation.transfer.destination}</span>
+                    </div>`;
+             }
+        } else if (simulation.type === "code-example") {
+             titleText = "Code Example";
+             const pre = document.createElement('pre');
+             const code = document.createElement('code');
+             // Basic text setting, consider a highlighting library if needed
+             code.textContent = simulation.code;
+             // You might add a class for CSS/JS based highlighting, e.g., code.classList.add('language-c');
+             pre.appendChild(code);
+             simContent.appendChild(pre);
+        }
+        else {
+            // Default fallback for unknown types or simple structures
+             simContent.innerHTML += `<pre>${JSON.stringify(simulation, null, 2)}</pre>`;
+        }
+
+        // Add Title Element (Prepended)
+        const titleEl = document.createElement('h4');
+        titleEl.classList.add('sim-title');
+        titleEl.textContent = titleText;
+        simContent.prepend(titleEl); // Add title at the beginning
+
+        // --- Add Placeholders for Relevance/Analogy if data were available ---
+        /*
+        simContent.appendChild(document.createElement('hr'));
+        const relevanceEl = document.createElement('p');
+        relevanceEl.classList.add('sim-relevance');
+        relevanceEl.innerHTML = `<b>Relevance:</b> (Add relevance data to questions.js)`;
+        simContent.appendChild(relevanceEl);
+
+        const analogyEl = document.createElement('p');
+        analogyEl.classList.add('sim-analogy');
+        analogyEl.innerHTML = `<i><b>Analogy:</b> (Add analogy data to questions.js)</i>`;
+        simContent.appendChild(analogyEl);
+        */
+        // ---
+
         simContainer.appendChild(simContent);
-
-        // TODO: Add more specific simulation rendering based on type later
-        // switch (simulation.type) {
-        //     case 'register-view': createRegisterView(simContent, simulation); break;
-        //     // ... other cases
-        //     default: simContent.innerHTML = '<p>Simulation details appear here.</p>';
-        // }
     }
 
-    // --- Helper to update selectedTopics array based on button classes ---
+
+    // --- Helper to update selectedTopics array ---
     function updateSelectedTopicsArray() {
-          const specificTopicButtons = document.querySelectorAll('.topic-btn:not([data-topic="all"])');
-          selectedTopics = Array.from(specificTopicButtons)
-                             .filter(btn => btn && btn.classList.contains('selected')) // Added null check for safety
-                             .map(btn => btn.dataset.topic);
-          console.log("Updated Selected Topics:", selectedTopics);
+        const specificTopicButtons = document.querySelectorAll('.topic-btn:not([data-topic="all"])');
+        selectedTopics = Array.from(specificTopicButtons)
+            .filter(btn => btn && btn.classList.contains('selected'))
+            .map(btn => btn.dataset.topic);
+        // console.log("Updated Selected Topics:", selectedTopics); // Keep for debugging if needed
     }
 
-
-    // --- Event Listeners --- (With null checks)
-
-    // Start button
+    // --- Event Listeners ---
     if (startButton) {
         startButton.addEventListener('click', startGame);
-    } else {
-        console.error("Start button (#start-btn) not found!");
-    }
+    } else { console.error("Start button (#start-btn) not found!"); }
 
-    // Next button
     if (nextButton) {
         nextButton.addEventListener('click', handleNext);
-    } else {
-        console.error("Next button (#next-btn) not found!");
-    }
+    } else { console.error("Next button (#next-btn) not found!"); }
 
-     // Submit button
-     if (submitButton) {
-         submitButton.addEventListener('click', handleSubmit);
-     } else {
-         console.error("Submit button (#submit-btn) not found!");
-     }
+    if (submitButton) {
+        submitButton.addEventListener('click', handleSubmit);
+    } else { console.error("Submit button (#submit-btn) not found!"); }
 
-    // Restart button
     if (restartButton) {
         restartButton.addEventListener('click', restartGame);
-    } else {
-        console.error("Restart button (#restart-btn) not found!");
+    } else { console.error("Restart button (#restart-btn) not found!"); }
+
+    // New Game / Select New Topics button on results screen
+    const newTopicsButton = document.getElementById('new-topics-btn');
+    if (newTopicsButton) {
+         newTopicsButton.addEventListener('click', restartGame); // Same action as restart for now
     }
 
-    // Topic selection buttons
     topicButtons.forEach(button => {
-        if (button) { // Check if the button element exists
+        if (button) {
             button.addEventListener('click', () => {
-                // 'button' variable is valid within this handler's scope
                 const topic = button.dataset.topic;
                 const isSelected = button.classList.contains('selected');
                 const allButton = document.querySelector('.topic-btn[data-topic="all"]');
@@ -445,68 +494,50 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (topic === 'all') {
                     if (!isSelected) {
-                        // Selecting 'all'
                         button.classList.add('selected');
-                        specificTopicButtons.forEach(btn => {
-                            if(btn) btn.classList.add('selected'); // Check btn exists
-                        });
+                        specificTopicButtons.forEach(btn => { if(btn) btn.classList.add('selected'); });
                     } else {
-                        // Deselecting 'all'
                         button.classList.remove('selected');
-                        specificTopicButtons.forEach(btn => {
-                            if(btn) btn.classList.remove('selected'); // Check btn exists
-                        });
+                        specificTopicButtons.forEach(btn => { if(btn) btn.classList.remove('selected'); });
                     }
                 } else {
-                    // Clicked a specific topic button
-                    button.classList.toggle('selected'); // Toggle this specific button
-
-                    // Check if all specific topics are now selected
-                    // Ensure 'every' checks that btn exists before accessing classList
-                    const allSpecificSelected = Array.from(specificTopicButtons).every(btn => btn && btn.classList.contains('selected'));
-                    if (allButton) { // Check if 'all' button exists
+                    button.classList.toggle('selected');
+                    if (allButton) {
+                        const allSpecificSelected = Array.from(specificTopicButtons).every(btn => btn && btn.classList.contains('selected'));
                         if (allSpecificSelected) {
-                            allButton.classList.add('selected'); // Select 'all' visually
+                            allButton.classList.add('selected');
                         } else {
-                            allButton.classList.remove('selected'); // Deselect 'all' if any specific is deselected
+                            allButton.classList.remove('selected');
                         }
                     }
                 }
-                // Update the internal selectedTopics array after any button click
                 updateSelectedTopicsArray();
             });
         } else {
-             console.error("A topic button element was null during listener setup.");
+            console.error("A topic button element was null during listener setup.");
         }
     });
 
     // --- Initial Setup ---
     function initializeGameUI() {
-        // Ensure 'All Topics' is selected by default visually and logically
         const allButtonInitial = document.querySelector('.topic-btn[data-topic="all"]');
         if (allButtonInitial) {
             allButtonInitial.classList.add('selected');
-            // Also select all specific buttons initially if 'All' means all
-            topicButtons.forEach(btn => {
-                 if (btn && btn !== allButtonInitial) btn.classList.add('selected');
-            });
-            updateSelectedTopicsArray(); // Initialize with all topics selected
-        } else {
-            // If no 'All' button, maybe select none or the first one? Or just update array.
+            topicButtons.forEach(btn => { if (btn && btn !== allButtonInitial) btn.classList.add('selected'); });
             updateSelectedTopicsArray();
+        } else {
+            updateSelectedTopicsArray(); // Initialize even without 'All' button
         }
-
-        // Hide game/results areas initially
         if (gameScreen) gameScreen.classList.add('hidden');
         if (finalResultsElement) finalResultsElement.classList.add('hidden');
-        if (nextButton) nextButton.classList.add('hidden'); // Ensure next is hidden initially
-        if (submitButton) submitButton.disabled = true; // Start with submit disabled
-
-        // Show topic selection
+        if (nextButton) nextButton.classList.add('hidden');
+        if (submitButton) submitButton.disabled = true;
         if (topicSelectionScreen) topicSelectionScreen.classList.remove('hidden');
     }
 
-    // Run initial setup
     initializeGameUI();
 
 }); // End of DOMContentLoaded listener
+
+// NOTE: questions.js content is now provided by the user in the prompt,
+// so no need to define it here. Just ensure the import path is correct.
