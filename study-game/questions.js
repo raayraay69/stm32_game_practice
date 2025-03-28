@@ -291,11 +291,11 @@ export const questions = [
         simulation: {
             type: "code-example",
             code: `void TIM7_IRQHandler(void) {
-// Clear the update flag
-TIM7->SR &= ~TIM_SR_UIF;
+            // Clear the update flag
+            TIM7->SR &= ~TIM_SR_UIF;
 
-// Your interrupt handling code here
-}`
+            // Your interrupt handling code here
+            }`
         }
     }
 ]; // <-- Make sure this closing bracket and semicolon are the absolute end of the file.
